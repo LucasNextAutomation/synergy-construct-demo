@@ -629,324 +629,58 @@ export default function CollaborationPage() {
         </div>
       </section>
 
-      {/* ── Section 4: Investment Card ───────────────────────────────────────── */}
+      {/* ── Section 4: CTA ───────────────────────────────────────────────────── */}
       <section
         style={{
           backgroundColor: "#f6f7f8",
-          paddingTop: 100,
-          paddingBottom: 100,
+          paddingTop: 80,
+          paddingBottom: 80,
           paddingLeft: 40,
           paddingRight: 40,
+          textAlign: "center",
         }}
       >
-        <div style={{ maxWidth: 960, margin: "0 auto", display: "flex", justifyContent: "center" }}>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          style={{ maxWidth: 560, margin: "0 auto" }}
+        >
+          <p style={{ fontSize: 14, color: "#64748b", marginBottom: 20 }}>
+            For full pricing, service agreement, and payment options:
+          </p>
+          <a
+            href="https://nextautomation.us/proposals/synergy-construct"
+            target="_blank"
+            rel="noopener noreferrer"
             style={{
-              backgroundColor: "#0f172a",
-              borderRadius: 16,
-              padding: "48px 48px",
-              maxWidth: 560,
-              width: "100%",
-              color: "#ffffff",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              fontSize: 15,
+              fontWeight: 700,
+              color: "#E31E24",
+              textDecoration: "none",
+              padding: "14px 28px",
+              borderRadius: 10,
+              border: "2px solid #E31E24",
+              transition: "all 0.2s ease",
+            }}
+            onMouseEnter={e => {
+              const el = e.currentTarget as HTMLElement
+              el.style.backgroundColor = "#E31E24"
+              el.style.color = "#ffffff"
+            }}
+            onMouseLeave={e => {
+              const el = e.currentTarget as HTMLElement
+              el.style.backgroundColor = "transparent"
+              el.style.color = "#E31E24"
             }}
           >
-            {/* Eyebrow */}
-            <p
-              style={{
-                fontSize: 11,
-                fontWeight: 700,
-                letterSpacing: "0.08em",
-                textTransform: "uppercase",
-                color: "#E31E24",
-                marginBottom: 24,
-              }}
-            >
-              Investment
-            </p>
-
-            {/* Pricing row */}
-            <div style={{ marginBottom: 8 }}>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "baseline",
-                  marginBottom: 4,
-                }}
-              >
-                <span style={{ fontSize: 16, fontWeight: 600, color: "#ffffff" }}>
-                  Complete Platform Build
-                </span>
-                <span
-                  style={{
-                    fontSize: 24,
-                    fontWeight: 800,
-                    color: "#ffffff",
-                    letterSpacing: "-0.03em",
-                  }}
-                >
-                  $11,000
-                </span>
-              </div>
-              <p style={{ fontSize: 13, color: "#64748b", margin: 0 }}>
-                Bundle discount: $2,000 off individual pricing
-              </p>
-            </div>
-
-            {/* Divider */}
-            <div
-              style={{
-                height: 1,
-                backgroundColor: "rgba(255,255,255,0.08)",
-                margin: "24px 0",
-              }}
-            />
-
-            {/* Payment */}
-            <div style={{ marginBottom: 8 }}>
-              <p style={{ fontSize: 12, color: "#94a3b8", marginBottom: 6, fontWeight: 600, letterSpacing: "0.04em", textTransform: "uppercase" as const }}>
-                Payment Schedule
-              </p>
-              <p
-                style={{
-                  fontSize: 15,
-                  fontWeight: 600,
-                  color: "#ffffff",
-                  lineHeight: 1.5,
-                }}
-              >
-                50% to start ($5,500) + 50% at delivery ($5,500)
-              </p>
-            </div>
-
-            {/* Divider */}
-            <div
-              style={{
-                height: 1,
-                backgroundColor: "rgba(255,255,255,0.08)",
-                margin: "24px 0",
-              }}
-            />
-
-            {/* Managed vs Handoff */}
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: 16,
-              }}
-              className="!grid-cols-1 md:!grid-cols-2"
-            >
-              {/* Managed */}
-              <div
-                style={{
-                  backgroundColor: "rgba(255,255,255,0.05)",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  borderRadius: 12,
-                  padding: 20,
-                  position: "relative",
-                }}
-              >
-                {/* Recommended badge */}
-                <div
-                  style={{
-                    position: "absolute",
-                    top: -10,
-                    left: "50%",
-                    transform: "translateX(-50%)",
-                    backgroundColor: "#22C55E",
-                    color: "#ffffff",
-                    fontSize: 10,
-                    fontWeight: 700,
-                    letterSpacing: "0.06em",
-                    textTransform: "uppercase",
-                    padding: "3px 10px",
-                    borderRadius: 20,
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  Recommended
-                </div>
-                <p
-                  style={{
-                    fontSize: 15,
-                    fontWeight: 700,
-                    color: "#ffffff",
-                    marginBottom: 4,
-                  }}
-                >
-                  Managed
-                </p>
-                <p
-                  style={{
-                    fontSize: 22,
-                    fontWeight: 800,
-                    color: "#ffffff",
-                    letterSpacing: "-0.03em",
-                    marginBottom: 16,
-                  }}
-                >
-                  $600
-                  <span style={{ fontSize: 13, fontWeight: 500, color: "#94a3b8" }}>/mo</span>
-                </p>
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  {managedFeatures.map(f => (
-                    <div key={f} style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-                      <CheckCircle2
-                        size={13}
-                        style={{ color: "#22C55E", flexShrink: 0, marginTop: 2 }}
-                      />
-                      <span style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.5 }}>{f}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Handoff */}
-              <div
-                style={{
-                  backgroundColor: "rgba(255,255,255,0.03)",
-                  border: "1px solid rgba(255,255,255,0.07)",
-                  borderRadius: 12,
-                  padding: 20,
-                }}
-              >
-                <p
-                  style={{
-                    fontSize: 15,
-                    fontWeight: 700,
-                    color: "#ffffff",
-                    marginBottom: 4,
-                  }}
-                >
-                  Handoff
-                </p>
-                <p
-                  style={{
-                    fontSize: 22,
-                    fontWeight: 800,
-                    color: "#ffffff",
-                    letterSpacing: "-0.03em",
-                    marginBottom: 16,
-                  }}
-                >
-                  $0
-                  <span style={{ fontSize: 13, fontWeight: 500, color: "#94a3b8" }}>/mo</span>
-                </p>
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  {handoffFeatures.map(f => (
-                    <div key={f} style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-                      <CheckCircle2
-                        size={13}
-                        style={{ color: "#64748b", flexShrink: 0, marginTop: 2 }}
-                      />
-                      <span style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.5 }}>{f}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Divider */}
-            <div
-              style={{
-                height: 1,
-                backgroundColor: "rgba(255,255,255,0.08)",
-                margin: "32px 0 28px",
-              }}
-            />
-
-            {/* Ready to Start */}
-            <p
-              style={{
-                fontSize: 12,
-                color: "#94a3b8",
-                marginBottom: 20,
-                fontWeight: 600,
-                letterSpacing: "0.04em",
-                textTransform: "uppercase" as const,
-              }}
-            >
-              Ready to Start
-            </p>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {/* Pay Deposit Button */}
-              <a
-                href="https://buy.stripe.com/5kQ9ATaMK0LP47a9rVfMA0P"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 10,
-                  fontSize: 15,
-                  fontWeight: 700,
-                  color: "#ffffff",
-                  textDecoration: "none",
-                  padding: "14px 24px",
-                  borderRadius: 10,
-                  backgroundColor: "#E31E24",
-                  transition: "background-color 0.2s ease",
-                  cursor: "pointer",
-                }}
-                onMouseEnter={e =>
-                  ((e.currentTarget as HTMLElement).style.backgroundColor = "#c91a22")
-                }
-                onMouseLeave={e =>
-                  ((e.currentTarget as HTMLElement).style.backgroundColor = "#E31E24")
-                }
-              >
-                <CreditCard size={16} />
-                Pay Deposit — $5,500
-              </a>
-
-              {/* Download Contract */}
-              <a
-                href="/Synergy-Construct-Service-Agreement.pdf"
-                download
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 10,
-                  fontSize: 14,
-                  fontWeight: 600,
-                  color: "#ffffff",
-                  textDecoration: "none",
-                  padding: "12px 24px",
-                  borderRadius: 10,
-                  border: "1px solid rgba(255,255,255,0.15)",
-                  backgroundColor: "rgba(255,255,255,0.05)",
-                  transition: "all 0.2s ease",
-                  cursor: "pointer",
-                }}
-                onMouseEnter={e => {
-                  const el = e.currentTarget as HTMLElement
-                  el.style.backgroundColor = "rgba(255,255,255,0.1)"
-                  el.style.borderColor = "rgba(255,255,255,0.25)"
-                }}
-                onMouseLeave={e => {
-                  const el = e.currentTarget as HTMLElement
-                  el.style.backgroundColor = "rgba(255,255,255,0.05)"
-                  el.style.borderColor = "rgba(255,255,255,0.15)"
-                }}
-              >
-                <FileText size={15} />
-                Download Service Agreement (PDF)
-              </a>
-            </div>
-
-            <p style={{ fontSize: 11, color: "#475569", marginTop: 16, lineHeight: 1.5, textAlign: "center" }}>
-              Secure payment via Stripe. Service agreement is non-binding until signed by both parties.
-            </p>
-          </motion.div>
-        </div>
+            View Full Proposal <ArrowRight size={16} />
+          </a>
+        </motion.div>
       </section>
     </div>
   )
