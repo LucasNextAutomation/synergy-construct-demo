@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { motion } from "framer-motion"
 import { FileSearch, Building2, Calculator, Shield, ArrowRight, CheckCircle2, Clock, TrendingUp, Zap, Database } from "lucide-react"
 import AnimatedCounter from "@/components/AnimatedCounter"
@@ -92,8 +93,15 @@ export default function LandingPage() {
               transition={{ ease: "easeOut", duration: 0.4 }}
               className="flex justify-center mb-10"
             >
-              <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-[#13161C] border border-[#252A35] flex items-center justify-center shadow-lg animate-pulse-glow">
-                <span className="text-[#3B7BF5] font-bold text-2xl md:text-3xl">SC</span>
+              <div className="rounded-2xl bg-[#13161C] border border-[#252A35] p-4 md:p-5 shadow-lg animate-pulse-glow">
+                <Image
+                  src="/synergy-logo-dark.png"
+                  alt="Synergy Construct"
+                  width={200}
+                  height={48}
+                  className="h-10 md:h-12 w-auto object-contain"
+                  priority
+                />
               </div>
             </motion.div>
 
