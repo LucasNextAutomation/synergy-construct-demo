@@ -105,29 +105,67 @@ const pipeline = [
   },
 ]
 
-// ─── Real example from our POC — actual files we processed ──────────────────
-const realExample = {
-  noticeNo: "SCN1040947",
-  title: "Modernizarea infrastructurii rutiere in comuna Ciucea, judetul Cluj",
-  source: "e-licitatie.ro API, fetched 2026-03-24",
-  files: [
-    { name: "caiet-sarcini-spital.pdf.p7m", size: "2,425 bytes", type: "p7m", status: "extracted" },
-    { name: "formulare-oferta.pdf", size: "876 bytes", type: "pdf", status: "text extracted" },
-    { name: "tender-documents.zip", size: "3,528 bytes", type: "zip", status: "unpacked" },
-  ],
-  extractedText: "CAIET DE SARCINI - Reabilitare Spital Municipal\nAutoritate contractanta: Primaria Municipiului Bucuresti\nValoare estimata: 45.000.000 RON\nCod CPV: 45215100-8 - Lucrari de constructii de cladiri pentru sanatate",
-  aiBrief: [
-    "Domeniu proiect: Reabilitarea unei cladiri spitalicesti municipale, incluzand modernizarea instalatiilor medicale si sisteme HVAC specializate",
-    "Cerinte cheie: Autorizatii ANRE, certificari ISO 9001/14001, experienta in reabilitari spitalicesti",
-    "Valoare si timeline: 45M RON, durata estimata executie 18-24 luni",
-    "Flag-uri de risc: Lucrari pe faze fara intreruperea serviciilor medicale, cerinte deseuri medicale",
-    "Risc financiar moderat: Primaria Bucuresti, istoric de intarzieri la plati in proiecte mari",
-    "Recomandare: GO — proiect atractiv pentru companii cu experienta medicala (min. 15M RON cifra afaceri)",
-    "Conditii: Verificare portofoliu similar (min. 2 spitale reabilitate), evaluare cash-flow",
-  ],
-  processingTime: "6.7s",
-  matchScore: 87,
-}
+// ─── Real documents downloaded from SEAP on 2026-03-24 ──────────────────────
+// Downloaded via: GET api-pub/NoticeCommon/DownloadNoticeDocument/?documentId={id}
+// Files verified on VPS at /tmp/seap-docs/demo-ready/
+
+const realDocuments = [
+  {
+    name: "clarificare_DUAE_signed.p7m",
+    size: "828,423 bytes",
+    type: "p7m",
+    status: "CMS Verification successful",
+    signer: "Pfizer Romania SRL",
+    extractedSize: "821,002 bytes",
+    extractedType: "PDF document, version 1.6",
+    note: "Scanned PDF — OCR required for text extraction",
+  },
+  {
+    name: "raspuns_consolidat_signed.p7s",
+    size: "672,086 bytes",
+    type: "p7s",
+    status: "CMS Verification successful",
+    signer: "Judetul Satu Mare",
+    extractedSize: "667,257 bytes",
+    extractedType: "PDF document, version 1.4, 2 pages",
+    note: "Scanned PDF — OCR required for text extraction",
+  },
+  {
+    name: "fisa_date_RATB_bucuresti.pdf",
+    size: "292,352 bytes",
+    type: "pdf",
+    status: "Text layer detected",
+    signer: "RATB — Regia Autonoma de Transport Bucuresti",
+    extractedSize: "47,608 chars / 6,658 words",
+    extractedType: "11-page procurement document",
+    note: "Direct text extraction via pdfminer.six — no OCR needed",
+  },
+]
+
+const extractedTextPreview = `Sistemul Electronic de Achizitii Publice
+
+Fisa de date
+Tip anunt: Anunt de participare simplificat
+Tip Legislatie: Legea nr. 99/23.05.2016
+
+Sectiunea I Autoritatea contractanta
+
+I.1) Denumire si adrese
+Regia Autonoma de Transport Bucuresti
+
+Cod de identificare fiscala: 1589886
+Adresa: Strada: Bd. Dinicu Golescu, nr. 1
+Localitate: Bucuresti; Cod Postal: 7000; Tara: Romania
+Codul NUTS: RO321 Bucuresti`
+
+const realAiBrief = [
+  "Domeniul proiectului: Furnizare cabluri cu conductoare de aluminiu cu intarziere marita la propagarea flacarii pentru vehiculele de transport public RATB. Contractul este impartit in 14 loturi.",
+  "Cerinte cheie: Cabluri de joasa tensiune conforme anexei 1 model acord cadru, cantitate minima 150m — maxima 210m pentru lotul 1. Livrare la sediul RATB (Intrarea Vagonului nr.11, sector 2, Bucuresti).",
+  "Valoare si calendar: Valoarea totala estimata 337.629,46 RON fara TVA (toate loturile). Termen clarificari: 6 zile inainte de depunere oferte.",
+  "Riscuri identificate: Valoarea foarte mica per lot (sub 500 RON) poate indica costuri administrative disproportionate. Documentul pare incomplet.",
+  "Flag-uri procedurale: Legislatia aplicabila 99/2016, procedura simplificata. Autoritate contractanta stabila (RATB).",
+  "Recomandare: CONDITIONAT — Participare doar daca aveti stoc existent si capacitate de livrare rapida in Bucuresti.",
+]
 
 const fileColors: Record<string, string> = {
   p7s: "#3B82F6",
@@ -164,7 +202,7 @@ export default function ProcessingPage() {
           </p>
         </motion.div>
 
-        {/* Real Example Card */}
+        {/* Real Documents Card */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -179,59 +217,65 @@ export default function ProcessingPage() {
             boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
           }}
         >
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, marginBottom: 20 }}>
-            <div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                <span style={{ fontSize: 12, fontFamily: "var(--font-mono)", color: "#94a3b8" }}>{realExample.noticeNo}</span>
-                <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", backgroundColor: "#22C55E10", color: "#22C55E", border: "1px solid #22C55E20", padding: "2px 8px", borderRadius: 20 }}>
-                  REAL DATA
-                </span>
-              </div>
-              <h2 style={{ fontSize: 16, fontWeight: 700, color: "#0f172a", letterSpacing: "-0.02em", margin: 0 }}>
-                {realExample.title}
-              </h2>
-              <p style={{ fontSize: 12, color: "#94a3b8", marginTop: 4 }}>
-                Source: {realExample.source}
-              </p>
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+              <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", backgroundColor: "#22C55E10", color: "#22C55E", border: "1px solid #22C55E20", padding: "2px 8px", borderRadius: 20 }}>
+                REAL SEAP DOCUMENTS
+              </span>
+              <span style={{ fontSize: 11, color: "#94a3b8" }}>Downloaded 2026-03-24 via e-licitatie.ro API</span>
             </div>
-            <div style={{ textAlign: "right", flexShrink: 0 }}>
-              <p style={{ fontSize: 11, color: "#94a3b8", margin: "0 0 2px" }}>Total time</p>
-              <p style={{ fontSize: 20, fontWeight: 800, color: "#0f172a", letterSpacing: "-0.03em", margin: 0 }}>{realExample.processingTime}</p>
-            </div>
+            <p style={{ fontSize: 14, color: "#64748b", lineHeight: 1.6, margin: 0 }}>
+              3 real documents from the Romanian SEAP system, downloaded via <span style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>api-pub/NoticeCommon/DownloadNoticeDocument/</span>
+            </p>
           </div>
 
           {/* Files processed */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 20 }}>
-            {realExample.files.map((file, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", backgroundColor: "#f6f7f8", border: "1px solid #e8eaed", borderRadius: 10, padding: "10px 14px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <FileText size={14} style={{ color: fileColors[file.type] || "#94a3b8" }} />
-                  <div>
-                    <p style={{ fontSize: 13, fontWeight: 600, color: "#0f172a", margin: 0, fontFamily: "var(--font-mono)" }}>{file.name}</p>
-                    <p style={{ fontSize: 11, color: "#94a3b8", margin: 0 }}>{file.size}</p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 24 }}>
+            {realDocuments.map((doc, i) => (
+              <div key={i} style={{ backgroundColor: "#f6f7f8", border: "1px solid #e8eaed", borderRadius: 12, padding: 16 }}>
+                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 8 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <FileText size={16} style={{ color: fileColors[doc.type] || "#94a3b8", flexShrink: 0 }} />
+                    <div>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: "#0f172a", margin: 0, fontFamily: "var(--font-mono)" }}>{doc.name}</p>
+                      <p style={{ fontSize: 11, color: "#94a3b8", margin: "2px 0 0" }}>{doc.size} &middot; Signer: {doc.signer}</p>
+                    </div>
                   </div>
+                  <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", color: "#22C55E", whiteSpace: "nowrap", flexShrink: 0 }}>{doc.status}</span>
                 </div>
-                <span style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", color: "#22C55E" }}>{file.status}</span>
+                <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+                  <span style={{ fontSize: 11, color: "#64748b" }}>Extracted: <strong style={{ color: "#0f172a" }}>{doc.extractedSize}</strong></span>
+                  <span style={{ fontSize: 11, color: "#64748b" }}>Type: <strong style={{ color: "#0f172a" }}>{doc.extractedType}</strong></span>
+                </div>
+                <p style={{ fontSize: 11, color: "#94a3b8", marginTop: 6, marginBottom: 0, fontStyle: "italic" }}>{doc.note}</p>
               </div>
             ))}
           </div>
 
-          {/* Extracted text */}
-          <div style={{ marginBottom: 20 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#94a3b8", marginBottom: 8 }}>Extracted Text (from .p7m)</p>
-            <div style={{ backgroundColor: "#0f172a", borderRadius: 10, padding: 16, fontFamily: "var(--font-mono)", fontSize: 12, lineHeight: 1.6, color: "#e2e8f0", whiteSpace: "pre-wrap" }}>
-              {realExample.extractedText}
+          {/* Extracted text from RATB */}
+          <div style={{ marginBottom: 24 }}>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#94a3b8", marginBottom: 8 }}>
+              Extracted Text — RATB Bucuresti (47,608 chars / 6,658 words)
+            </p>
+            <div style={{ backgroundColor: "#0f172a", borderRadius: 10, padding: 16, fontFamily: "var(--font-mono)", fontSize: 11, lineHeight: 1.7, color: "#e2e8f0", whiteSpace: "pre-wrap" }}>
+              {extractedTextPreview}
             </div>
+            <p style={{ fontSize: 10, color: "#94a3b8", marginTop: 6 }}>Showing first 400 chars of 47,608 total. Full text sent to Claude for analysis.</p>
           </div>
 
-          {/* AI Brief */}
+          {/* AI Brief from real RATB document */}
           <div>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#94a3b8", marginBottom: 8 }}>AI Qualification Brief (Claude Output)</p>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              {realExample.aiBrief.map((point, i) => (
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#94a3b8", marginBottom: 4 }}>
+              AI Qualification Brief — Claude Sonnet 4 Output
+            </p>
+            <p style={{ fontSize: 11, color: "#94a3b8", marginBottom: 12 }}>
+              Generated from real RATB procurement document. Model: claude-sonnet-4-20250514
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {realAiBrief.map((point, i) => (
                 <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-                  <CheckCircle2 size={13} style={{ color: i === 5 ? "#22C55E" : "#64748b", flexShrink: 0, marginTop: 3 }} />
-                  <p style={{ fontSize: 13, color: "#0f172a", lineHeight: 1.5, margin: 0 }}>{point}</p>
+                  <CheckCircle2 size={13} style={{ color: i === 5 ? "#F59E0B" : "#64748b", flexShrink: 0, marginTop: 3 }} />
+                  <p style={{ fontSize: 13, color: "#0f172a", lineHeight: 1.55, margin: 0 }}>{point}</p>
                 </div>
               ))}
             </div>
