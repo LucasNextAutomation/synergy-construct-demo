@@ -34,6 +34,7 @@ export interface Tender {
   documents: TenderDocument[]
   aiBrief: TenderBrief
   hidden?: boolean
+  source?: 'mock' | 'seap-live'
 }
 
 export const mockTenders: Tender[] = [

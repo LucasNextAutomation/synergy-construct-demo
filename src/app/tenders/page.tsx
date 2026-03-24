@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useRef } from "react"
+import { useState, useCallback, useRef, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   FileSearch, AlertTriangle, TrendingUp, MapPin,
@@ -8,6 +8,7 @@ import {
   ArrowUpDown, SlidersHorizontal, Radar, BarChart3, FileText
 } from "lucide-react"
 import { mockTenders, tenderStats, type Tender } from "@/data/tenders"
+import { realTenders } from "@/data/seap-real"
 import Navbar from "@/components/Navbar"
 import TenderSlideout from "@/components/TenderSlideout"
 import Footer from "@/components/Footer"
@@ -19,30 +20,44 @@ function fmtRON(n: number) {
 }
 
 function ScoreBadge({ score }: { score: number }) {
-  const color = score >= 85 ? "bg-emerald-500/10 text-emerald-600 border-emerald-200"
-    : score >= 70 ? "bg-amber-500/10 text-amber-600 border-amber-200"
-    : "bg-gray-500/10 text-gray-500 border-gray-200"
-  return <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold border ${color}`}>{score}%</span>
+  const cls = score >= 85
+    ? "bg-[#22C55E]/10 text-[#22C55E] border-[#22C55E]/20"
+    : score >= 70
+    ? "bg-[#F59E0B]/10 text-[#F59E0B] border-[#F59E0B]/20"
+    : "bg-[#4A5268]/20 text-[#7A8499] border-[#4A5268]/30"
+  return (
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold border ${cls}`}>
+      {score}%
+    </span>
+  )
 }
 
 function StatusBadge({ status }: { status: Tender["status"] }) {
   const styles: Record<string, string> = {
-    new: "bg-blue-500/10 text-blue-600 border-blue-200",
-    analyzing: "bg-amber-500/10 text-amber-600 border-amber-200",
-    briefed: "bg-emerald-500/10 text-emerald-600 border-emerald-200",
-    passed: "bg-gray-500/10 text-gray-500 border-gray-200",
+    new: "bg-[#3B7BF5]/10 text-[#60A5FA] border-[#3B7BF5]/20",
+    analyzing: "bg-[#F59E0B]/10 text-[#F59E0B] border-[#F59E0B]/20",
+    briefed: "bg-[#22C55E]/10 text-[#22C55E] border-[#22C55E]/20",
+    passed: "bg-[#4A5268]/20 text-[#7A8499] border-[#4A5268]/30",
   }
-  return <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider border ${styles[status]}`}>{status}</span>
+  return (
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider border ${styles[status]}`}>
+      {status}
+    </span>
+  )
 }
 
 function CategoryBadge({ category }: { category: Tender["category"] }) {
   const styles: Record<string, string> = {
-    Infrastructure: "bg-blue-50 text-blue-600 border-blue-200",
-    Buildings: "bg-purple-50 text-purple-600 border-purple-200",
-    Energy: "bg-amber-50 text-amber-600 border-amber-200",
-    Industrial: "bg-gray-50 text-gray-600 border-gray-200",
+    Infrastructure: "bg-[#3B7BF5]/10 text-[#60A5FA] border-[#3B7BF5]/20",
+    Buildings: "bg-[#A855F7]/10 text-[#A855F7] border-[#A855F7]/20",
+    Energy: "bg-[#F59E0B]/10 text-[#F59E0B] border-[#F59E0B]/20",
+    Industrial: "bg-[#4A5268]/20 text-[#7A8499] border-[#4A5268]/30",
   }
-  return <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${styles[category]}`}>{category}</span>
+  return (
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${styles[category]}`}>
+      {category}
+    </span>
+  )
 }
 
 type SortKey = "matchScore" | "estimatedValueRON" | "submissionDeadline"
@@ -64,6 +79,36 @@ const initialActivityFeed = [
   { time: "3 hr ago", text: "Brief generated for CN1087745 — road rehabilitation", type: "update" as const },
 ]
 
+// Map realTenders to Tender interface for display
+const seapLiveTenders: Tender[] = realTenders.map(rt => ({
+  id: `seap-${rt.noticeNo}`,
+  seapId: rt.noticeNo,
+  title: rt.title,
+  authority: rt.authority,
+  cpvCode: rt.cpvCode,
+  cpvDescription: rt.cpvDescription,
+  category: "Infrastructure" as const,
+  region: rt.region,
+  city: rt.region,
+  estimatedValueRON: rt.estimatedValueRon,
+  estimatedValueEUR: rt.estimatedValueEur,
+  submissionDeadline: rt.deadline.split('T')[0],
+  publishDate: rt.publishDate.split('T')[0],
+  estimatedDuration: "12 months",
+  guaranteeRON: Math.round(rt.estimatedValueRon * 0.02),
+  status: rt.status,
+  matchScore: rt.matchScore,
+  documents: [],
+  aiBrief: {
+    summary: "Real tender from SEAP e-licitatie.ro — AI brief pending document download.",
+    keyRequirements: ["Document package available on SEAP", "Full analysis after document extraction"],
+    certifications: ["ISO 9001", "ISO 14001"],
+    estimatedTimeline: "12-18 months",
+    riskFlags: ["Verify document package completeness before bidding"],
+  },
+  source: "seap-live" as const,
+}))
+
 export default function TendersPage() {
   const [selectedTender, setSelectedTender] = useState<Tender | null>(null)
   const [categoryFilter, setCategoryFilter] = useState("all")
@@ -78,8 +123,11 @@ export default function TendersPage() {
   const [activityFeed, setActivityFeed] = useState(initialActivityFeed)
   const scanningRef = useRef(false)
 
+  // Merge: real SEAP tenders first, then mock tenders
+  const allTenders = useMemo(() => [...seapLiveTenders, ...mockTenders], [])
+
   const hiddenTenders = mockTenders.filter(t => t.hidden)
-  const visibleTenders = mockTenders.filter(t => !t.hidden || revealedTenders.includes(t.id))
+  const visibleTenders = allTenders.filter(t => !t.hidden || revealedTenders.includes(t.id))
 
   const filteredTenders = visibleTenders
     .filter(t => categoryFilter === "all" || t.category === categoryFilter)
@@ -87,6 +135,10 @@ export default function TendersPage() {
       const aNew = revealedTenders.includes(a.id) ? 1 : 0
       const bNew = revealedTenders.includes(b.id) ? 1 : 0
       if (aNew !== bNew) return bNew - aNew
+      // Real SEAP tenders sort before mock
+      const aLive = a.source === "seap-live" ? 1 : 0
+      const bLive = b.source === "seap-live" ? 1 : 0
+      if (aLive !== bLive) return bLive - aLive
       if (sortBy === "submissionDeadline") {
         const cmp = new Date(a.submissionDeadline).getTime() - new Date(b.submissionDeadline).getTime()
         return sortDir === "desc" ? -cmp : cmp
@@ -96,7 +148,7 @@ export default function TendersPage() {
 
   const categories = [...new Set(mockTenders.filter(t => !t.hidden).map(t => t.category))]
 
-  const totalTenders = scanComplete ? tenderStats.totalTenders + hiddenTenders.length : tenderStats.totalTenders
+  const totalTenders = scanComplete ? tenderStats.totalTenders + hiddenTenders.length : tenderStats.totalTenders + seapLiveTenders.length
   const newToday = scanComplete ? tenderStats.newToday + hiddenTenders.length : tenderStats.newToday
 
   const runScan = useCallback(async () => {
@@ -158,18 +210,18 @@ export default function TendersPage() {
   }, [hiddenTenders])
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#0C0E12]">
       <Navbar />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         {/* Top Bar */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">SEAP Tender Monitor</h1>
-            <p className="text-sm text-gray-400 flex items-center gap-2 mt-1">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <h1 className="text-2xl font-semibold text-[#E8ECF4] tracking-tight">SEAP Tender Monitor</h1>
+            <p className="text-sm text-[#7A8499] flex items-center gap-2 mt-1">
+              <span className="w-2 h-2 rounded-full bg-[#22C55E] animate-pulse" />
               {tenderStats.sourcesActive} sources active — Last scan: {new Date(tenderStats.lastScanTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-              <span className="text-gray-300">|</span>
+              <span className="text-[#4A5268]">|</span>
               {tenderStats.regionsMonitored} regions
             </p>
           </div>
@@ -177,10 +229,10 @@ export default function TendersPage() {
             <button
               onClick={runScan}
               disabled={scanning || scanComplete}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                scanning ? "bg-[#D4A843] text-white animate-pulse cursor-wait"
-                : scanComplete ? "bg-emerald-500 text-white cursor-default"
-                : "bg-[#D4A843] text-white hover:bg-[#c49a3a] shadow-lg shadow-[#D4A843]/25"
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                scanning ? "bg-[#3B7BF5] text-white animate-pulse cursor-wait"
+                : scanComplete ? "bg-[#22C55E]/20 text-[#22C55E] border border-[#22C55E]/30 cursor-default"
+                : "bg-[#3B7BF5] text-white hover:bg-[#2E6AE0] shadow-lg shadow-[#3B7BF5]/20"
               }`}
             >
               <Radar className={`w-4 h-4 ${scanning ? "animate-spin" : ""}`} />
@@ -188,7 +240,11 @@ export default function TendersPage() {
             </button>
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${showFilters ? "bg-[#1B2A4A] text-white" : "border border-gray-200 text-gray-500 hover:bg-gray-50"}`}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                showFilters
+                  ? "bg-[#3B7BF5]/10 text-[#3B7BF5] border border-[#3B7BF5]/20"
+                  : "border border-[#252A35] text-[#7A8499] hover:bg-[#1A1E27] hover:text-[#E8ECF4]"
+              }`}
             >
               <SlidersHorizontal className="w-4 h-4" /> Filters
             </button>
@@ -202,18 +258,19 @@ export default function TendersPage() {
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
+              transition={{ ease: "easeOut" }}
               className="overflow-hidden mb-6"
             >
-              <div className="bg-[#D4A843]/5 border border-[#D4A843]/20 rounded-xl p-4">
+              <div className="bg-[#60A5FA]/5 border border-[#60A5FA]/20 rounded-xl p-4">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-[#D4A843]">
+                  <span className="text-sm font-medium text-[#60A5FA]">
                     {scanStep < scanSteps.length ? scanSteps[scanStep].label : `Scan complete — ${hiddenTenders.length} new tenders found`}
                   </span>
-                  <span className="text-xs text-gray-400 font-mono">{Math.round(scanProgress)}%</span>
+                  <span className="text-xs text-[#7A8499] font-mono">{Math.round(scanProgress)}%</span>
                 </div>
-                <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div className="w-full h-2 bg-[#1A1E27] rounded-full overflow-hidden">
                   <motion.div
-                    className="h-full bg-[#D4A843] rounded-full"
+                    className="h-full bg-[#60A5FA] rounded-full"
                     style={{ width: `${scanProgress}%` }}
                     transition={{ duration: 0.1 }}
                   />
@@ -221,8 +278,8 @@ export default function TendersPage() {
                 <div className="flex items-center gap-4 mt-2">
                   {scanSteps.map((s, i) => (
                     <div key={i} className="flex items-center gap-1.5">
-                      <span className={`w-2 h-2 rounded-full ${i < scanStep ? "bg-emerald-500" : i === scanStep ? "bg-[#D4A843] animate-pulse" : "bg-gray-300"}`} />
-                      <span className={`text-[10px] hidden sm:inline ${i <= scanStep ? "text-gray-600" : "text-gray-300"}`}>
+                      <span className={`w-2 h-2 rounded-full ${i < scanStep ? "bg-[#22C55E]" : i === scanStep ? "bg-[#60A5FA] animate-pulse" : "bg-[#252A35]"}`} />
+                      <span className={`text-[10px] hidden sm:inline ${i <= scanStep ? "text-[#7A8499]" : "text-[#4A5268]"}`}>
                         {i < 4 ? "Deterministic" : "AI"}
                       </span>
                     </div>
@@ -240,26 +297,27 @@ export default function TendersPage() {
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
+              transition={{ ease: "easeOut" }}
               className="overflow-hidden mb-4"
             >
-              <div className="bg-white border border-gray-200 rounded-xl p-4 flex flex-wrap items-center gap-4">
+              <div className="bg-[#13161C] border border-[#252A35] rounded-xl p-4 flex flex-wrap items-center gap-4">
                 <div>
-                  <label className="text-[10px] text-gray-400 uppercase tracking-wider block mb-1">Category</label>
+                  <label className="text-[10px] text-[#7A8499] uppercase tracking-wider block mb-1">Category</label>
                   <select
                     value={categoryFilter}
                     onChange={e => setCategoryFilter(e.target.value)}
-                    className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-700"
+                    className="text-sm border border-[#252A35] rounded-lg px-3 py-1.5 bg-[#0C0E12] text-[#E8ECF4] focus:outline-none focus:border-[#3B7BF5]"
                   >
                     <option value="all">All Categories</option>
                     {categories.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="text-[10px] text-gray-400 uppercase tracking-wider block mb-1">Sort By</label>
+                  <label className="text-[10px] text-[#7A8499] uppercase tracking-wider block mb-1">Sort By</label>
                   <select
                     value={sortBy}
                     onChange={e => setSortBy(e.target.value as SortKey)}
-                    className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-700"
+                    className="text-sm border border-[#252A35] rounded-lg px-3 py-1.5 bg-[#0C0E12] text-[#E8ECF4] focus:outline-none focus:border-[#3B7BF5]"
                   >
                     <option value="matchScore">Match Score</option>
                     <option value="estimatedValueRON">Value (RON)</option>
@@ -268,7 +326,7 @@ export default function TendersPage() {
                 </div>
                 <button
                   onClick={() => setSortDir(d => d === "desc" ? "asc" : "desc")}
-                  className="flex items-center gap-1 px-3 py-1.5 mt-4 rounded-lg border border-gray-200 text-sm text-gray-600 hover:bg-gray-50"
+                  className="flex items-center gap-1 px-3 py-1.5 mt-4 rounded-lg border border-[#252A35] text-sm text-[#7A8499] hover:bg-[#1A1E27] hover:text-[#E8ECF4] transition-colors duration-200"
                 >
                   <ArrowUpDown className="w-3.5 h-3.5" />
                   {sortDir === "desc" ? "High \u2192 Low" : "Low \u2192 High"}
@@ -281,18 +339,18 @@ export default function TendersPage() {
         {/* Stats Row */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
           {[
-            { label: "Total Tenders", value: totalTenders.toString(), sub: `${newToday} new today`, icon: FileSearch, color: "text-[#D4A843]" },
-            { label: "High Value (>50M)", value: tenderStats.highValue.toString(), sub: "Major opportunities", icon: TrendingUp, color: "text-emerald-500" },
-            { label: "New Today", value: newToday.toString(), sub: "Published on SEAP", icon: AlertTriangle, color: "text-blue-500" },
-            { label: "Avg. Value", value: fmtRON(tenderStats.avgValueRON), sub: "All monitored tenders", icon: BarChart3, color: "text-purple-500" },
+            { label: "Total Tenders", value: totalTenders.toString(), sub: `${newToday} new today`, icon: FileSearch, color: "text-[#3B7BF5]", border: "border-l-[#3B7BF5]" },
+            { label: "High Value (>50M)", value: tenderStats.highValue.toString(), sub: "Major opportunities", icon: TrendingUp, color: "text-[#22C55E]", border: "border-l-[#22C55E]" },
+            { label: "New Today", value: newToday.toString(), sub: "Published on SEAP", icon: AlertTriangle, color: "text-[#60A5FA]", border: "border-l-[#60A5FA]" },
+            { label: "Avg. Value", value: fmtRON(tenderStats.avgValueRON), sub: "All monitored tenders", icon: BarChart3, color: "text-[#F97316]", border: "border-l-[#F97316]" },
           ].map(s => (
-            <div key={s.label} className="bg-gray-50/80 border border-gray-100 rounded-xl p-4">
+            <div key={s.label} className={`bg-[#13161C] border border-[#252A35] border-l-2 ${s.border} rounded-xl p-4`}>
               <div className="flex items-center gap-2 mb-2">
                 <s.icon className={`w-4 h-4 ${s.color}`} />
-                <span className="text-[10px] text-gray-400 uppercase tracking-wider">{s.label}</span>
+                <span className="text-[10px] text-[#7A8499] uppercase tracking-wider">{s.label}</span>
               </div>
-              <p className="text-2xl font-bold text-gray-900">{s.value}</p>
-              <p className="text-[10px] text-gray-400 mt-0.5">{s.sub}</p>
+              <p className="text-2xl font-bold text-[#E8ECF4]">{s.value}</p>
+              <p className="text-[10px] text-[#7A8499] mt-0.5">{s.sub}</p>
             </div>
           ))}
         </div>
@@ -301,63 +359,97 @@ export default function TendersPage() {
           {/* Main — Tender List */}
           <div className="lg:col-span-3 space-y-3">
             <div className="flex items-center justify-between mb-2">
-              <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
+              <h2 className="text-sm font-semibold text-[#7A8499] uppercase tracking-wider">
                 {filteredTenders.length} {filteredTenders.length === 1 ? "Tender" : "Tenders"} found
-                {categoryFilter !== "all" && <span className="text-gray-400 font-normal"> in {categoryFilter}</span>}
+                {categoryFilter !== "all" && <span className="text-[#4A5268] font-normal"> in {categoryFilter}</span>}
               </h2>
             </div>
 
             {filteredTenders.length === 0 && (
-              <div className="bg-white border border-dashed border-gray-300 rounded-xl p-12 text-center">
-                <FileSearch className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-                <h3 className="text-sm font-semibold text-gray-500 mb-1">No tenders match your filters</h3>
-                <p className="text-xs text-gray-400">Try adjusting your category filter or sort criteria.</p>
-                <button onClick={() => setCategoryFilter("all")} className="mt-3 text-xs text-[#D4A843] font-medium hover:underline">Clear filters</button>
+              <div className="bg-[#13161C] border border-dashed border-[#252A35] rounded-xl p-12 text-center">
+                <FileSearch className="w-10 h-10 text-[#4A5268] mx-auto mb-3" />
+                <h3 className="text-sm font-semibold text-[#7A8499] mb-1">No tenders match your filters</h3>
+                <p className="text-xs text-[#4A5268]">Try adjusting your category filter or sort criteria.</p>
+                <button onClick={() => setCategoryFilter("all")} className="mt-3 text-xs text-[#3B7BF5] font-medium hover:underline">Clear filters</button>
               </div>
             )}
 
             {filteredTenders.map((tender, index) => {
               const isNew = revealedTenders.includes(tender.id)
+              const isLive = tender.source === "seap-live"
               return (
                 <motion.div
                   key={tender.id}
-                  initial={isNew ? { opacity: 0, y: -20, scale: 0.95 } : { opacity: 0, y: 10 }}
+                  initial={isNew ? { opacity: 0, y: -20, scale: 0.95 } : { opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={isNew ? { delay: 0.2 * revealedTenders.indexOf(tender.id), type: "spring", stiffness: 200 } : { delay: 0.03 * index }}
+                  transition={
+                    isNew
+                      ? { delay: 0.2 * revealedTenders.indexOf(tender.id), ease: "easeOut" }
+                      : { delay: 0.07 * index, ease: "easeOut" }
+                  }
                   onClick={() => setSelectedTender(tender)}
-                  className={`group bg-white border rounded-xl p-4 cursor-pointer transition-all hover:shadow-md ${
-                    isNew ? "border-[#D4A843] ring-1 ring-[#D4A843]/20" : "border-gray-200 hover:border-gray-300"
+                  className={`group bg-[#13161C] border rounded-xl p-4 cursor-pointer transition-colors duration-200 ${
+                    isNew
+                      ? "border-[#22C55E]/40 ring-1 ring-[#22C55E]/10"
+                      : isLive
+                      ? "border-[#3B7BF5]/30 hover:border-[#343B4A]"
+                      : "border-[#252A35] hover:border-[#343B4A] hover:bg-[#1A1E27]"
                   }`}
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        <span className="text-xs font-mono text-gray-400">{tender.seapId}</span>
+                        <span className="text-xs font-mono text-[#4A5268]">{tender.seapId}</span>
                         <StatusBadge status={tender.status} />
                         <CategoryBadge category={tender.category} />
                         <ScoreBadge score={tender.matchScore} />
+                        {isLive && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#3B7BF5]/10 text-[#60A5FA] border border-[#3B7BF5]/20">
+                            LIVE
+                          </span>
+                        )}
                         {isNew && (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#D4A843] text-white animate-pulse">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#22C55E]/10 text-[#22C55E] border border-[#22C55E]/20 animate-pulse">
                             NEW
                           </span>
                         )}
                       </div>
-                      <h3 className="text-sm font-bold text-gray-900 group-hover:text-[#D4A843] transition-colors leading-tight">{tender.title}</h3>
-                      <p className="text-xs text-gray-500 mt-1">{tender.authority}</p>
-                      <p className="text-[10px] text-gray-400 mt-0.5">{tender.cpvCode} — {tender.cpvDescription}</p>
+                      <h3 className="text-sm font-bold text-[#E8ECF4] group-hover:text-[#3B7BF5] transition-colors duration-200 leading-tight">{tender.title}</h3>
+                      <p className="text-xs text-[#7A8499] mt-1">{tender.authority}</p>
+                      <p className="text-[10px] text-[#4A5268] mt-0.5">{tender.cpvCode} — {tender.cpvDescription}</p>
                     </div>
                     <div className="flex-shrink-0 grid grid-cols-2 gap-3 text-right hidden sm:grid">
-                      <div><p className="text-[10px] text-gray-400">Value</p><p className="text-sm font-bold text-gray-900">{fmtRON(tender.estimatedValueRON)}</p></div>
-                      <div><p className="text-[10px] text-gray-400">EUR</p><p className="text-sm font-bold text-gray-500">{(tender.estimatedValueEUR / 1_000_000).toFixed(1)}M</p></div>
-                      <div><p className="text-[10px] text-gray-400">Deadline</p><p className="text-xs font-bold text-gray-900">{tender.submissionDeadline}</p></div>
-                      <div><p className="text-[10px] text-gray-400">Duration</p><p className="text-xs font-bold text-gray-900">{tender.estimatedDuration}</p></div>
+                      <div>
+                        <p className="text-[10px] text-[#7A8499]">Value</p>
+                        <p className="text-sm font-bold text-[#E8ECF4]">{fmtRON(tender.estimatedValueRON)}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-[#7A8499]">EUR</p>
+                        <p className="text-sm font-bold text-[#7A8499]">{(tender.estimatedValueEUR / 1_000_000).toFixed(1)}M</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-[#7A8499]">Deadline</p>
+                        <p className="text-xs font-bold text-[#E8ECF4]">{tender.submissionDeadline}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-[#7A8499]">Duration</p>
+                        <p className="text-xs font-bold text-[#E8ECF4]">{tender.estimatedDuration}</p>
+                      </div>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-[#D4A843] transition-colors mt-2 flex-shrink-0" />
+                    <ChevronRight className="w-5 h-5 text-[#4A5268] group-hover:text-[#3B7BF5] transition-colors duration-200 mt-2 flex-shrink-0" />
                   </div>
-                  <div className="flex items-center gap-4 mt-3 pt-3 border-t border-gray-100">
-                    <span className="text-[10px] text-gray-400 flex items-center gap-1"><MapPin className="w-3 h-3" /> {tender.city}, {tender.region}</span>
-                    <span className="text-[10px] text-gray-400 flex items-center gap-1"><Clock className="w-3 h-3" /> {Math.ceil((new Date(tender.submissionDeadline).getTime() - Date.now()) / 86400000)}d left</span>
-                    <span className="text-[10px] text-gray-400 flex items-center gap-1"><FileText className="w-3 h-3" /> {tender.documents.length} docs</span>
+                  <div className="flex items-center gap-4 mt-3 pt-3 border-t border-[#252A35]">
+                    <span className="text-[10px] text-[#7A8499] flex items-center gap-1">
+                      <MapPin className="w-3 h-3" /> {tender.city}, {tender.region}
+                    </span>
+                    <span className="text-[10px] text-[#7A8499] flex items-center gap-1">
+                      <Clock className="w-3 h-3" /> {Math.max(0, Math.ceil((new Date(tender.submissionDeadline).getTime() - Date.now()) / 86400000))}d left
+                    </span>
+                    {tender.documents.length > 0 && (
+                      <span className="text-[10px] text-[#7A8499] flex items-center gap-1">
+                        <FileText className="w-3 h-3" /> {tender.documents.length} docs
+                      </span>
+                    )}
                   </div>
                 </motion.div>
               )
@@ -367,19 +459,19 @@ export default function TendersPage() {
           {/* Sidebar */}
           <div className="space-y-4 lg:sticky lg:top-20 lg:self-start">
             {/* Category Breakdown */}
-            <div className="bg-gray-50/80 border border-gray-100 rounded-xl p-4">
-              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+            <div className="bg-[#13161C] border border-[#252A35] rounded-xl p-4">
+              <h3 className="text-xs font-bold text-[#7A8499] uppercase tracking-wider mb-3 flex items-center gap-2">
                 <BarChart3 className="w-3.5 h-3.5" /> By Category
               </h3>
               <div className="space-y-2.5">
                 {tenderStats.categoryBreakdown.map(c => (
                   <div key={c.category}>
                     <div className="flex items-center justify-between text-sm mb-1">
-                      <span className="text-gray-700">{c.category}</span>
-                      <span className="text-xs text-gray-400">{c.count}</span>
+                      <span className="text-[#E8ECF4] text-xs">{c.category}</span>
+                      <span className="text-xs text-[#7A8499]">{c.count}</span>
                     </div>
-                    <div className="w-full h-1.5 rounded-full bg-gray-100 overflow-hidden">
-                      <div className="h-full rounded-full bg-[#D4A843]/50" style={{ width: `${(c.count / 10) * 100}%` }} />
+                    <div className="w-full h-1.5 rounded-full bg-[#1A1E27] overflow-hidden">
+                      <div className="h-full rounded-full bg-[#3B7BF5]/50" style={{ width: `${(c.count / 10) * 100}%` }} />
                     </div>
                   </div>
                 ))}
@@ -387,23 +479,23 @@ export default function TendersPage() {
             </div>
 
             {/* Region Breakdown */}
-            <div className="bg-gray-50/80 border border-gray-100 rounded-xl p-4">
-              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+            <div className="bg-[#13161C] border border-[#252A35] rounded-xl p-4">
+              <h3 className="text-xs font-bold text-[#7A8499] uppercase tracking-wider mb-3 flex items-center gap-2">
                 <MapPin className="w-3.5 h-3.5" /> By Region
               </h3>
               <div className="space-y-2">
                 {tenderStats.regionBreakdown.map(r => (
                   <div key={r.region} className="flex items-center justify-between">
-                    <span className="text-xs text-gray-600">{r.region}</span>
-                    <span className="text-xs font-medium text-gray-400">{r.count}</span>
+                    <span className="text-xs text-[#7A8499]">{r.region}</span>
+                    <span className="text-xs font-medium text-[#E8ECF4]">{r.count}</span>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Activity Feed */}
-            <div className="bg-gray-50/80 border border-gray-100 rounded-xl p-4">
-              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+            <div className="bg-[#13161C] border border-[#252A35] rounded-xl p-4">
+              <h3 className="text-xs font-bold text-[#7A8499] uppercase tracking-wider mb-3 flex items-center gap-2">
                 <Activity className="w-3.5 h-3.5" /> Source Activity
               </h3>
               <div className="space-y-3">
@@ -412,14 +504,15 @@ export default function TendersPage() {
                     key={`${a.text}-${i}`}
                     initial={a.time === "Just now" ? { opacity: 0, x: -10 } : false}
                     animate={{ opacity: 1, x: 0 }}
+                    transition={{ ease: "easeOut" }}
                     className="flex items-start gap-2"
                   >
                     <div className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${
-                      a.type === "alert" ? "bg-red-500" : a.type === "new" ? "bg-blue-500" : "bg-gray-400"
+                      a.type === "alert" ? "bg-[#EF4444]" : a.type === "new" ? "bg-[#3B7BF5]" : "bg-[#4A5268]"
                     }`} />
                     <div>
-                      <p className="text-xs text-gray-700">{a.text}</p>
-                      <p className="text-[10px] text-gray-400">{a.time}</p>
+                      <p className="text-xs text-[#E8ECF4]">{a.text}</p>
+                      <p className="text-[10px] text-[#7A8499]">{a.time}</p>
                     </div>
                   </motion.div>
                 ))}
