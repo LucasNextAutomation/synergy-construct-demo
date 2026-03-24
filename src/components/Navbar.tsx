@@ -25,7 +25,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
           <Link href="/" className="flex items-center gap-3">
             <Image
-              src="/synergy-logo.png"
+              src="/synergy-logo-dark.png"
               alt="Synergy Construct"
               width={160}
               height={40}
