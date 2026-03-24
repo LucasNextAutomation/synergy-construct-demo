@@ -29,7 +29,7 @@ const pipeline = [
       "OK Parsed 20 contract notices",
       "OK Filtered to 9 construction tenders (CPV 45*)",
     ],
-    sourceUrl: "https://e-licitatie.ro/pub/notices/contract-notices/list/0/0",
+    sourceUrl: "https://www.tendersgo.com/post/how-public-procurement-works-in-romania-laws-seap-platform-and-bid-submission-guide",
   },
   {
     step: 2,
@@ -49,7 +49,7 @@ const pipeline = [
       "<- 672,086 bytes (raspuns_consolidat_satumare.p7s)",
       "OK 2 signed documents downloaded",
     ],
-    sourceUrl: "https://e-licitatie.ro/pub",
+    sourceUrl: "https://www.opengovpartnership.org/members/romania/commitments/RO0046/",
   },
   {
     step: 3,
@@ -234,18 +234,36 @@ export default function ProcessingPage() {
         >
           <Shield size={18} style={{ color: "#22C55E", flexShrink: 0, marginTop: 2 }} />
           <div>
-            <p style={{ fontSize: 13, fontWeight: 600, color: "#0f172a", margin: "0 0 4px" }}>All documents sourced from e-licitatie.ro</p>
-            <p style={{ fontSize: 12, color: "#64748b", margin: "0 0 6px", lineHeight: 1.5 }}>
-              SEAP (Sistemul Electronic de Achizitii Publice) is Romania's official government procurement portal, operated by the Authority for Digitalization of Romania under Law 98/2016.
+            <p style={{ fontSize: 13, fontWeight: 600, color: "#0f172a", margin: "0 0 4px" }}>All documents sourced from e-licitatie.ro (SEAP)</p>
+            <p style={{ fontSize: 12, color: "#64748b", margin: "0 0 8px", lineHeight: 1.5 }}>
+              SEAP (Sistemul Electronic de Achizitii Publice) is Romania{"'"}s official government procurement portal, operated by the Authority for Digitalization of Romania under Law 98/2016. All tender data is publicly accessible by law.
             </p>
-            <a
-              href="https://e-licitatie.ro/pub/notices/contract-notices/list/0/0"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ fontSize: 12, fontWeight: 600, color: "#E31E24", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}
-            >
-              Visit SEAP Portal <ExternalLink size={11} />
-            </a>
+            <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+              <a
+                href="https://www.tendersgo.com/post/how-public-procurement-works-in-romania-laws-seap-platform-and-bid-submission-guide"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ fontSize: 12, fontWeight: 600, color: "#E31E24", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}
+              >
+                How SEAP Works <ExternalLink size={11} />
+              </a>
+              <a
+                href="https://www.opengovpartnership.org/members/romania/commitments/RO0046/"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ fontSize: 12, fontWeight: 600, color: "#E31E24", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}
+              >
+                Romania Open Data Commitment <ExternalLink size={11} />
+              </a>
+              <a
+                href="https://e-licitatie.ro/pub"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ fontSize: 12, fontWeight: 600, color: "#64748b", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}
+              >
+                e-licitatie.ro (RO only) <ExternalLink size={11} />
+              </a>
+            </div>
           </div>
         </motion.div>
 
