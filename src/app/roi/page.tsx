@@ -44,7 +44,7 @@ export default function ROIPage() {
   const totalOpportunityValue = potentialSavingsOnDeals
 
   return (
-    <div className="min-h-screen bg-[#0C0E12]">
+    <div className="min-h-screen bg-[#f6f7f8]">
       <Navbar />
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
@@ -52,14 +52,14 @@ export default function ROIPage() {
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ ease: "easeOut" }}
+          transition={{ ease: "easeOut", duration: 0.5 }}
           className="text-center mb-12"
         >
-          <div className="w-14 h-14 rounded-2xl bg-[#3B7BF5]/10 border border-[#3B7BF5]/20 flex items-center justify-center mx-auto mb-4">
-            <Calculator className="w-7 h-7 text-[#3B7BF5]" />
+          <div className="w-14 h-14 rounded-2xl bg-[#E31E24]/8 border border-[#E31E24]/20 flex items-center justify-center mx-auto mb-4">
+            <Calculator className="w-7 h-7 text-[#E31E24]" />
           </div>
-          <h1 className="text-3xl font-semibold text-[#E8ECF4] tracking-tight mb-2">ROI Calculator</h1>
-          <p className="text-[#7A8499] max-w-lg mx-auto">
+          <h1 className="text-3xl font-semibold text-[#0f172a] tracking-tight mb-2">ROI Calculator</h1>
+          <p className="text-[#64748b] max-w-lg mx-auto">
             Adjust the inputs below to see how much time and money your team could save with automated tender monitoring and investment sourcing.
           </p>
         </motion.div>
@@ -69,16 +69,17 @@ export default function ROIPage() {
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1, ease: "easeOut" }}
-            className="bg-[#13161C] border border-[#252A35] rounded-2xl p-6"
+            transition={{ delay: 0.1, ease: "easeOut", duration: 0.5 }}
+            style={{ borderRadius: 16, border: '1px solid #e8eaed', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
+            className="bg-white p-6"
           >
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-xl bg-[#3B7BF5]/10 border border-[#3B7BF5]/20 flex items-center justify-center">
-                <FileSearch className="w-5 h-5 text-[#3B7BF5]" />
+              <div className="w-10 h-10 rounded-xl bg-[#E31E24]/8 border border-[#E31E24]/20 flex items-center justify-center">
+                <FileSearch className="w-5 h-5 text-[#E31E24]" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-[#E8ECF4]">Tender Monitoring</h2>
-                <p className="text-xs text-[#7A8499]">SEAP / e-licitatie.ro automation</p>
+                <h2 className="text-lg font-semibold text-[#0f172a]">Tender Monitoring</h2>
+                <p className="text-xs text-[#64748b]">SEAP / e-licitatie.ro automation</p>
               </div>
             </div>
 
@@ -122,8 +123,8 @@ export default function ROIPage() {
             </div>
 
             {/* Results */}
-            <div className="mt-6 pt-6 border-t border-[#252A35] space-y-3">
-              <ResultRow label="Weekly hours saved" value={`${tenderWeeklyHoursSaved}h`} color="text-[#60A5FA]" />
+            <div className="mt-6 pt-6 border-t border-[#e8eaed] space-y-3">
+              <ResultRow label="Weekly hours saved" value={`${tenderWeeklyHoursSaved}h`} color="text-[#3B82F6]" />
               <ResultRow label="Monthly savings" value={`${fmtNum(tenderMonthlySavingsEUR)} EUR`} color="text-[#22C55E]" />
               <ResultRow label="Annual savings" value={`${fmtNum(tenderAnnualSavingsEUR)} EUR`} color="text-[#22C55E]" highlight />
               <div className="bg-[#EF4444]/5 border border-[#EF4444]/15 rounded-lg p-3 mt-3">
@@ -138,16 +139,17 @@ export default function ROIPage() {
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, ease: "easeOut" }}
-            className="bg-[#13161C] border border-[#252A35] rounded-2xl p-6"
+            transition={{ delay: 0.2, ease: "easeOut", duration: 0.5 }}
+            style={{ borderRadius: 16, border: '1px solid #e8eaed', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
+            className="bg-white p-6"
           >
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-xl bg-[#22C55E]/10 border border-[#22C55E]/20 flex items-center justify-center">
                 <Building2 className="w-5 h-5 text-[#22C55E]" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-[#E8ECF4]">Investment Finder</h2>
-                <p className="text-xs text-[#7A8499]">Off-market property sourcing</p>
+                <h2 className="text-lg font-semibold text-[#0f172a]">Investment Finder</h2>
+                <p className="text-xs text-[#64748b]">Off-market property sourcing</p>
               </div>
             </div>
 
@@ -184,13 +186,13 @@ export default function ROIPage() {
             </div>
 
             {/* Results */}
-            <div className="mt-6 pt-6 border-t border-[#252A35] space-y-3">
-              <ResultRow label="Weekly hours saved" value={`${investWeeklyHoursSaved}h`} color="text-[#60A5FA]" />
+            <div className="mt-6 pt-6 border-t border-[#e8eaed] space-y-3">
+              <ResultRow label="Weekly hours saved" value={`${investWeeklyHoursSaved}h`} color="text-[#3B82F6]" />
               <ResultRow label="Monthly savings" value={`${fmtNum(investMonthlySavingsEUR)} EUR`} color="text-[#22C55E]" />
               <ResultRow label="Annual savings" value={`${fmtNum(investAnnualSavingsEUR)} EUR`} color="text-[#22C55E]" highlight />
-              <ResultRow label="Additional deals found/year" value={additionalDealsPerYear.toString()} color="text-[#3B7BF5]" />
-              <div className="bg-[#22C55E]/5 border border-[#22C55E]/15 rounded-lg p-3 mt-3">
-                <p className="text-xs text-[#22C55E]/80">
+              <ResultRow label="Additional deals found/year" value={additionalDealsPerYear.toString()} color="text-[#3B82F6]" />
+              <div className="bg-[#22C55E]/8 border border-[#22C55E]/15 rounded-lg p-3 mt-3">
+                <p className="text-xs text-[#22C55E]/90">
                   Finding <strong className="text-[#22C55E]">{additionalDealsPerYear} more deals/year</strong> at avg {avgDiscountPercent}% discount = <strong className="text-[#22C55E]">{fmtNum(potentialSavingsOnDeals)} EUR</strong> in additional savings on acquisitions.
                 </p>
               </div>
@@ -198,56 +200,57 @@ export default function ROIPage() {
           </motion.div>
         </div>
 
-        {/* Combined Summary */}
+        {/* Combined Summary — navy card like W5 */}
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, ease: "easeOut" }}
-          className="bg-[#13161C] border border-[#252A35] rounded-2xl p-8"
+          transition={{ delay: 0.3, ease: "easeOut", duration: 0.5 }}
+          style={{ borderRadius: 16, boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}
+          className="bg-[#0f172a] p-8"
         >
-          <h2 className="text-center text-xs uppercase tracking-[0.2em] text-[#3B7BF5] font-medium mb-8">
+          <p className="text-center text-[11px] uppercase tracking-[0.08em] text-[#E31E24] font-bold mb-8">
             Combined Annual Impact
-          </h2>
+          </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
             <div className="text-center">
-              <div className="w-12 h-12 rounded-xl bg-[#3B7BF5]/10 border border-[#3B7BF5]/20 flex items-center justify-center mx-auto mb-3">
-                <Clock className="w-6 h-6 text-[#3B7BF5]" />
+              <div className="w-12 h-12 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center mx-auto mb-3">
+                <Clock className="w-6 h-6 text-white" />
               </div>
-              <p className="text-4xl font-bold text-[#E8ECF4]">{totalWeeklyHoursSaved}h</p>
-              <p className="text-sm text-[#7A8499] mt-1">saved per week</p>
-              <p className="text-xs text-[#4A5268] mt-0.5">{totalWeeklyHoursSaved * 52}h per year</p>
+              <p className="text-4xl font-bold text-white">{totalWeeklyHoursSaved}h</p>
+              <p className="text-sm text-[#94a3b8] mt-1">saved per week</p>
+              <p className="text-xs text-[#64748b] mt-0.5">{totalWeeklyHoursSaved * 52}h per year</p>
             </div>
             <div className="text-center">
               <div className="w-12 h-12 rounded-xl bg-[#22C55E]/10 border border-[#22C55E]/20 flex items-center justify-center mx-auto mb-3">
                 <TrendingUp className="w-6 h-6 text-[#22C55E]" />
               </div>
-              <p className="text-4xl font-bold text-[#E8ECF4]">{fmtNum(totalAnnualSavingsEUR)}</p>
-              <p className="text-sm text-[#7A8499] mt-1">EUR saved annually</p>
-              <p className="text-xs text-[#4A5268] mt-0.5">In team productivity</p>
+              <p className="text-4xl font-bold text-white">{fmtNum(totalAnnualSavingsEUR)}</p>
+              <p className="text-sm text-[#94a3b8] mt-1">EUR saved annually</p>
+              <p className="text-xs text-[#64748b] mt-0.5">In team productivity</p>
             </div>
             <div className="text-center">
-              <div className="w-12 h-12 rounded-xl bg-[#60A5FA]/10 border border-[#60A5FA]/20 flex items-center justify-center mx-auto mb-3">
-                <Building2 className="w-6 h-6 text-[#60A5FA]" />
+              <div className="w-12 h-12 rounded-xl bg-[#E31E24]/10 border border-[#E31E24]/20 flex items-center justify-center mx-auto mb-3">
+                <Building2 className="w-6 h-6 text-[#E31E24]" />
               </div>
-              <p className="text-4xl font-bold text-[#E8ECF4]">{fmtNum(totalOpportunityValue)}</p>
-              <p className="text-sm text-[#7A8499] mt-1">EUR in opportunity value</p>
-              <p className="text-xs text-[#4A5268] mt-0.5">{additionalDealsPerYear} additional deals/year</p>
+              <p className="text-4xl font-bold text-white">{fmtNum(totalOpportunityValue)}</p>
+              <p className="text-sm text-[#94a3b8] mt-1">EUR in opportunity value</p>
+              <p className="text-xs text-[#64748b] mt-0.5">{additionalDealsPerYear} additional deals/year</p>
             </div>
           </div>
 
           <div className="flex items-center justify-center gap-3 text-center">
-            <div className="bg-[#1A1E27] border border-[#343B4A] rounded-xl px-6 py-4 inline-flex items-center gap-3 flex-wrap justify-center">
-              <span className="text-lg font-bold text-[#3B7BF5]">{totalWeeklyHoursSaved}h/week</span>
-              <ArrowRight className="w-5 h-5 text-[#4A5268]" />
+            <div className="bg-white/5 border border-white/10 rounded-xl px-6 py-4 inline-flex items-center gap-3 flex-wrap justify-center">
+              <span className="text-lg font-bold text-white">{totalWeeklyHoursSaved}h/week</span>
+              <ArrowRight className="w-5 h-5 text-[#64748b]" />
               <span className="text-lg font-bold text-[#22C55E]">{fmtNum(totalAnnualSavingsEUR)} EUR/year</span>
-              <span className="text-[#4A5268] mx-1">+</span>
-              <span className="text-lg font-bold text-[#60A5FA]">{fmtNum(totalOpportunityValue)} EUR</span>
-              <span className="text-sm text-[#7A8499] ml-1">opportunity value</span>
+              <span className="text-[#64748b] mx-1">+</span>
+              <span className="text-lg font-bold text-[#E31E24]">{fmtNum(totalOpportunityValue)} EUR</span>
+              <span className="text-sm text-[#94a3b8] ml-1">opportunity value</span>
             </div>
           </div>
 
-          <p className="text-center text-xs text-[#4A5268] mt-6">
+          <p className="text-center text-xs text-[#64748b] mt-6">
             Calculations assume 85% automation of monitoring tasks and 80% of search tasks.
             Actual results may vary based on implementation scope.
           </p>
@@ -279,12 +282,13 @@ function InputSlider({
   format?: (v: number) => string
 }) {
   const display = format ? format(value) : value.toString()
+  const pct = ((value - min) / (max - min)) * 100
 
   return (
     <div>
       <div className="flex items-center justify-between mb-1.5">
-        <label className="text-sm text-[#7A8499]">{label}</label>
-        <span className="text-sm font-bold text-[#E8ECF4]">{display} {unit}</span>
+        <label className="text-sm text-[#64748b]">{label}</label>
+        <span className="text-sm font-bold text-[#0f172a]">{display} {unit}</span>
       </div>
       <input
         type="range"
@@ -293,10 +297,10 @@ function InputSlider({
         step={step}
         value={value}
         onChange={e => onChange(Number(e.target.value))}
-        className="w-full h-2 rounded-full appearance-none cursor-pointer accent-[#3B7BF5]"
-        style={{ background: `linear-gradient(to right, #3B7BF5 0%, #3B7BF5 ${((value - min) / (max - min)) * 100}%, #252A35 ${((value - min) / (max - min)) * 100}%, #252A35 100%)` }}
+        className="w-full h-2 rounded-full appearance-none cursor-pointer"
+        style={{ background: `linear-gradient(to right, #E31E24 0%, #E31E24 ${pct}%, #e8eaed ${pct}%, #e8eaed 100%)` }}
       />
-      <div className="flex justify-between text-[10px] text-[#4A5268] mt-0.5">
+      <div className="flex justify-between text-[10px] text-[#94a3b8] mt-0.5">
         <span>{format ? format(min) : min} {unit}</span>
         <span>{format ? format(max) : max} {unit}</span>
       </div>
@@ -306,8 +310,8 @@ function InputSlider({
 
 function ResultRow({ label, value, color, highlight }: { label: string; value: string; color: string; highlight?: boolean }) {
   return (
-    <div className={`flex items-center justify-between ${highlight ? "bg-[#1A1E27] border border-[#252A35] rounded-lg px-3 py-2 -mx-1" : ""}`}>
-      <span className={`text-sm ${highlight ? "font-semibold text-[#E8ECF4]" : "text-[#7A8499]"}`}>{label}</span>
+    <div className={`flex items-center justify-between ${highlight ? "bg-[#f6f7f8] border border-[#e8eaed] rounded-lg px-3 py-2 -mx-1" : ""}`}>
+      <span className={`text-sm ${highlight ? "font-semibold text-[#0f172a]" : "text-[#64748b]"}`}>{label}</span>
       <span className={`text-sm font-bold ${color} ${highlight ? "text-base" : ""}`}>{value}</span>
     </div>
   )

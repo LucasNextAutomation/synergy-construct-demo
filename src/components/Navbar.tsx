@@ -1,81 +1,156 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
-import { FileSearch, Building2, Calculator, Shield, Menu, X } from "lucide-react"
-import LiveIndicator from "@/components/LiveIndicator"
+import { Menu, X } from "lucide-react"
 
 const navItems = [
   { href: "/", label: "Overview" },
-  { href: "/tenders", label: "Tender Monitor", icon: FileSearch, live: true },
-  { href: "/investments", label: "Investment Finder", icon: Building2 },
-  { href: "/roi", label: "ROI Calculator", icon: Calculator },
-  { href: "/processing", label: "Processing", icon: Shield },
+  { href: "/tenders", label: "Tender Monitor" },
+  { href: "/investments", label: "Investment Finder" },
+  { href: "/processing", label: "Processing" },
+  { href: "/roi", label: "ROI" },
+  { href: "/collaboration", label: "Collaboration" },
 ]
 
 export default function Navbar() {
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 8)
+    window.addEventListener("scroll", handleScroll, { passive: true })
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
 
   return (
-    <nav className="sticky top-0 z-50 bg-[#0C0E12]/80 backdrop-blur-xl border-b border-[#252A35]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="flex items-center justify-between h-16">
-          <Link href="/" className="flex items-center gap-3">
-            <Image
-              src="/synergy-logo-dark.png"
-              alt="Synergy Construct"
-              width={160}
-              height={40}
-              className="h-9 w-auto object-contain"
-              priority
-            />
-          </Link>
+    <nav
+      style={{
+        position: "sticky",
+        top: 0,
+        zIndex: 50,
+        height: 64,
+        backgroundColor: "#ffffff",
+        borderBottom: scrolled ? "1px solid #e8eaed" : "1px solid transparent",
+        backdropFilter: scrolled ? "blur(12px)" : "none",
+        boxShadow: scrolled ? "0 1px 8px rgba(0,0,0,0.06)" : "none",
+        transition: "all 0.2s ease",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: 960,
+          margin: "0 auto",
+          padding: "0 40px",
+          height: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        {/* Logo */}
+        <Link href="/" style={{ display: "flex", alignItems: "center" }}>
+          <Image
+            src="/synergy-logo.png"
+            alt="Synergy Construct"
+            width={160}
+            height={40}
+            style={{ height: 36, width: "auto", objectFit: "contain" }}
+            priority
+          />
+        </Link>
 
-          {/* Desktop nav */}
-          <div className="hidden md:flex items-center gap-0.5">
-            {navItems.map(item => {
-              const active = pathname === item.href
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
-                    active
-                      ? "bg-[#3B7BF5]/10 text-[#3B7BF5]"
-                      : "text-[#7A8499] hover:text-[#E8ECF4] hover:bg-[#1A1E27]"
-                  }`}
-                >
-                  {item.icon && <item.icon className="w-3.5 h-3.5" />}
-                  <span>{item.label}</span>
-                  {item.live && <LiveIndicator compact />}
-                </Link>
-              )
-            })}
-          </div>
+        {/* Desktop nav */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+          }}
+          className="hidden md:flex"
+        >
+          {navItems.map(item => {
+            const active = pathname === item.href
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                style={{
+                  padding: "6px 14px",
+                  borderRadius: 8,
+                  fontSize: 14,
+                  fontWeight: 500,
+                  color: active ? "#E31E24" : "#64748b",
+                  borderBottom: active ? "2px solid #E31E24" : "2px solid transparent",
+                  transition: "all 0.15s ease",
+                  textDecoration: "none",
+                }}
+                onMouseEnter={e => {
+                  if (!active) (e.currentTarget as HTMLElement).style.color = "#0f172a"
+                }}
+                onMouseLeave={e => {
+                  if (!active) (e.currentTarget as HTMLElement).style.color = "#64748b"
+                }}
+              >
+                {item.label}
+              </Link>
+            )
+          })}
+        </div>
 
-          <div className="flex items-center gap-3">
-            <span className="hidden md:inline text-xs text-[#7A8499]">
-              Built by <span className="text-[#3B7BF5] font-medium">NextAutomation</span>
-            </span>
+        {/* Right badge */}
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <span
+            className="hidden md:inline"
+            style={{
+              fontSize: 12,
+              fontWeight: 500,
+              color: "#64748b",
+              backgroundColor: "#f6f7f8",
+              border: "1px solid #e8eaed",
+              borderRadius: 20,
+              padding: "4px 12px",
+            }}
+          >
+            Built by{" "}
+            <span style={{ color: "#E31E24", fontWeight: 600 }}>NextAutomation</span>
+          </span>
 
-            {/* Mobile hamburger */}
-            <button
-              onClick={() => setMobileOpen(!mobileOpen)}
-              className="md:hidden p-2 rounded-lg hover:bg-[#1A1E27] text-[#7A8499] transition-colors duration-200"
-            >
-              {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
-          </div>
+          {/* Mobile hamburger */}
+          <button
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className="md:hidden"
+            style={{
+              padding: 8,
+              borderRadius: 8,
+              background: "none",
+              border: "1px solid #e8eaed",
+              cursor: "pointer",
+              color: "#64748b",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            {mobileOpen ? <X size={18} /> : <Menu size={18} />}
+          </button>
         </div>
       </div>
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-[#252A35] bg-[#13161C]">
-          <div className="px-4 py-3 space-y-0.5">
+        <div
+          className="md:hidden"
+          style={{
+            backgroundColor: "#ffffff",
+            borderTop: "1px solid #e8eaed",
+            borderBottom: "1px solid #e8eaed",
+          }}
+        >
+          <div style={{ padding: "12px 16px", display: "flex", flexDirection: "column", gap: 2 }}>
             {navItems.map(item => {
               const active = pathname === item.href
               return (
@@ -83,20 +158,33 @@ export default function Navbar() {
                   key={item.href}
                   href={item.href}
                   onClick={() => setMobileOpen(false)}
-                  className={`flex items-center gap-2.5 px-4 py-3 rounded-lg text-sm font-medium transition-colors duration-200 ${
-                    active
-                      ? "bg-[#3B7BF5]/10 text-[#3B7BF5]"
-                      : "text-[#7A8499] hover:bg-[#1A1E27] hover:text-[#E8ECF4]"
-                  }`}
+                  style={{
+                    display: "block",
+                    padding: "12px 16px",
+                    borderRadius: 8,
+                    fontSize: 15,
+                    fontWeight: 500,
+                    color: active ? "#E31E24" : "#64748b",
+                    backgroundColor: active ? "#E31E2408" : "transparent",
+                    textDecoration: "none",
+                    transition: "all 0.15s ease",
+                  }}
                 >
-                  {item.icon && <item.icon className="w-4 h-4" />}
-                  <span>{item.label}</span>
-                  {item.live && <LiveIndicator compact />}
+                  {item.label}
                 </Link>
               )
             })}
-            <div className="pt-3 mt-2 border-t border-[#252A35] px-4 text-xs text-[#7A8499]">
-              Built by <span className="text-[#3B7BF5] font-medium">NextAutomation</span>
+            <div
+              style={{
+                marginTop: 8,
+                paddingTop: 12,
+                borderTop: "1px solid #e8eaed",
+                paddingLeft: 16,
+                fontSize: 12,
+                color: "#64748b",
+              }}
+            >
+              Built by <span style={{ color: "#E31E24", fontWeight: 600 }}>NextAutomation</span>
             </div>
           </div>
         </div>

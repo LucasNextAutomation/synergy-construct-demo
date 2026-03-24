@@ -3,255 +3,644 @@
 import Link from "next/link"
 import Image from "next/image"
 import { motion } from "framer-motion"
-import { FileSearch, Building2, Calculator, Shield, ArrowRight, CheckCircle2, Clock, TrendingUp, Zap, Database } from "lucide-react"
+import {
+  FileSearch,
+  Building2,
+  Calculator,
+  Shield,
+  ArrowRight,
+  CheckCircle2,
+  Clock,
+  TrendingUp,
+  Database,
+} from "lucide-react"
 import AnimatedCounter from "@/components/AnimatedCounter"
 import { realStats } from "@/data/seap-real"
 
-const systems = [
-  {
-    href: "/tenders",
-    title: "SEAP Tender Monitor",
-    icon: FileSearch,
-    description: "Automated monitoring of e-licitatie.ro for construction tenders matching your criteria. AI extracts data from scanned PDFs and P7S files, generating project briefs instantly.",
-    highlights: ["Real-time SEAP monitoring", "OCR for scanned PDFs & P7S", "AI-powered project briefs"],
-    accent: "#3B7BF5",
-  },
-  {
-    href: "/investments",
-    title: "Investment Finder",
-    icon: Building2,
-    description: "Aggregates off-market opportunities from 6 sources — ANAF auctions, insolvency portals, listing platforms — scoring each deal's investment potential with AI analysis.",
-    highlights: ["6 data sources connected", "AI investment scoring", "Below-market deal alerts"],
-    accent: "#22C55E",
-  },
-  {
-    href: "/roi",
-    title: "ROI Calculator",
-    icon: Calculator,
-    description: "Interactive calculator showing the time and cost savings from automating your tender monitoring and investment search processes. Built to present to leadership.",
-    highlights: ["Time savings projection", "Cost-benefit analysis", "Leadership-ready report"],
-    accent: "#F59E0B",
-  },
-  {
-    href: "/processing",
-    title: "Document Processing",
-    icon: Shield,
-    description: "Proven .p7m, .p7s, ZIP handling with real extraction pipeline and AI analysis. Complete pipeline walkthrough from raw SEAP download to structured brief.",
-    highlights: [".p7m / .p7s / ZIP handling", "Tesseract OCR pipeline", "AI analysis proof"],
-    accent: "#60A5FA",
-  },
-]
-
+// ─── Data ─────────────────────────────────────────────────────────────────────
 const stats = [
   {
     label: "Tenders Monitored",
     value: realStats.totalMonitored,
     sub: "Active in SEAP system",
     icon: FileSearch,
-    borderColor: "border-l-[#3B7BF5]",
-    textColor: "text-[#3B7BF5]",
+    accentColor: "#3B82F6",
   },
   {
     label: "Construction Matches",
     value: realStats.constructionFiltered,
     sub: "CPV 45* sector filtered",
     icon: TrendingUp,
-    borderColor: "border-l-[#22C55E]",
-    textColor: "text-[#22C55E]",
+    accentColor: "#22C55E",
   },
   {
     label: "Hours Saved Weekly",
-    valueStr: "~18",
+    valueStr: "~18h",
     sub: "Across both modules",
     icon: Clock,
-    borderColor: "border-l-[#F59E0B]",
-    textColor: "text-[#F59E0B]",
+    accentColor: "#F59E0B",
   },
   {
     label: "Data Sources",
     valueStr: "6",
     sub: "Connected & active",
     icon: Database,
-    borderColor: "border-l-[#F97316]",
-    textColor: "text-[#F97316]",
+    accentColor: "#E31E24",
   },
 ]
 
-export default function LandingPage() {
+const systems = [
+  {
+    href: "/tenders",
+    title: "SEAP Tender Monitor",
+    icon: FileSearch,
+    description:
+      "Automated monitoring of e-licitatie.ro for construction tenders matching your criteria. AI extracts data from scanned PDFs and P7S files, generating project briefs instantly.",
+    links: [
+      { label: "How It Works", href: "/tenders#how" },
+      { label: "Live Demo", href: "/tenders" },
+    ],
+  },
+  {
+    href: "/investments",
+    title: "Investment Finder",
+    icon: Building2,
+    description:
+      "Aggregates off-market opportunities from 5 sources — UNPIR, ANABI, executari.com, imobiliare.ro, storia.ro — scoring each deal's investment potential with AI analysis.",
+    links: [
+      { label: "How It Works", href: "/investments#how" },
+      { label: "Live Demo", href: "/investments" },
+    ],
+  },
+  {
+    href: "/processing",
+    title: "Document Processing",
+    icon: Shield,
+    description:
+      "Proven .p7m, .p7s, ZIP handling with real extraction pipeline and AI analysis. Complete pipeline walkthrough from raw SEAP download to structured brief.",
+    links: [{ label: "View Pipeline", href: "/processing" }],
+  },
+  {
+    href: "/roi",
+    title: "ROI Calculator",
+    icon: Calculator,
+    description:
+      "Interactive calculator showing time and cost savings from automating tender monitoring and investment search. Built to present to leadership.",
+    links: [{ label: "Open Calculator", href: "/roi" }],
+  },
+]
+
+const included = [
+  "SEAP Tender Monitor (full build)",
+  "Investment Finder (full build)",
+  "Document Processing engine",
+  "Unified dashboard",
+  "Alert system (email + WhatsApp)",
+  "SAP export preparation",
+]
+
+const managedFeatures = [
+  "Monitor runs 24/7, no downtime",
+  "AI model upgrades included",
+  "New data sources on request",
+  "Priority support channel",
+]
+
+const handoffFeatures = [
+  "Full source code ownership",
+  "Deployment documentation",
+  "Self-hosted on your servers",
+  "Training session included",
+]
+
+// ─── Card hover helpers (inline style approach) ───────────────────────────────
+function CardWrapper({
+  children,
+  style,
+}: {
+  children: React.ReactNode
+  style?: React.CSSProperties
+}) {
   return (
-    <div className="min-h-screen bg-[#0C0E12] dot-grid">
-      {/* Hero */}
-      <section className="relative py-24 md:py-36 overflow-hidden">
-        {/* Radial blue glow */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-[#3B7BF5]/[0.06] rounded-full blur-3xl pointer-events-none" />
+    <div
+      style={{
+        backgroundColor: "#ffffff",
+        border: "1px solid #e8eaed",
+        borderRadius: 16,
+        boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+        transition: "all 0.2s ease",
+        ...style,
+      }}
+      onMouseEnter={e => {
+        const el = e.currentTarget as HTMLElement
+        el.style.boxShadow = "0 4px 20px rgba(0,0,0,0.08)"
+        el.style.transform = "translateY(-2px)"
+        el.style.borderColor = "#d0d5dd"
+      }}
+      onMouseLeave={e => {
+        const el = e.currentTarget as HTMLElement
+        el.style.boxShadow = "0 1px 3px rgba(0,0,0,0.04)"
+        el.style.transform = "translateY(0)"
+        el.style.borderColor = "#e8eaed"
+      }}
+    >
+      {children}
+    </div>
+  )
+}
 
-        <div className="max-w-4xl mx-auto px-6 relative">
-          <div className="text-center">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ ease: "easeOut", duration: 0.4 }}
-              className="flex justify-center mb-10"
-            >
-              <div className="rounded-2xl bg-[#13161C] border border-[#252A35] p-4 md:p-5 shadow-lg animate-pulse-glow">
-                <Image
-                  src="/synergy-logo-dark.png"
-                  alt="Synergy Construct"
-                  width={200}
-                  height={48}
-                  className="h-10 md:h-12 w-auto object-contain"
-                  priority
-                />
-              </div>
-            </motion.div>
+// ─── Page ─────────────────────────────────────────────────────────────────────
+export default function HomePage() {
+  return (
+    <div style={{ backgroundColor: "#ffffff", minHeight: "100vh" }}>
 
-            <motion.p
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1, ease: "easeOut" }}
-              className="text-xs md:text-sm uppercase tracking-[0.2em] text-[#7A8499] font-medium mb-6"
-            >
-              Synergy Construct
-            </motion.p>
+      {/* ── Section 1: Hero ─────────────────────────────────────────────────── */}
+      <section
+        style={{
+          backgroundColor: "#ffffff",
+          paddingTop: 120,
+          paddingBottom: 100,
+          paddingLeft: 40,
+          paddingRight: 40,
+        }}
+      >
+        <div
+          style={{
+            maxWidth: 960,
+            margin: "0 auto",
+            textAlign: "center",
+          }}
+        >
+          {/* Logo */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+            style={{ display: "flex", justifyContent: "center", marginBottom: 40 }}
+          >
+            <Image
+              src="/synergy-logo.png"
+              alt="Synergy Construct"
+              width={220}
+              height={56}
+              style={{ height: 52, width: "auto", objectFit: "contain" }}
+              priority
+            />
+          </motion.div>
 
-            <motion.h1
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15, ease: "easeOut" }}
-              className="text-3xl md:text-5xl lg:text-6xl font-semibold text-[#E8ECF4] mb-6 tracking-tight leading-[1.1]"
-            >
-              AI-Powered Construction<br />
-              Intelligence
-            </motion.h1>
+          {/* Headline */}
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
+            style={{
+              fontSize: "clamp(40px, 6vw, 64px)",
+              fontWeight: 800,
+              color: "#0f172a",
+              letterSpacing: "-0.03em",
+              lineHeight: 1.1,
+              margin: "0 0 20px",
+            }}
+          >
+            AI-Powered Construction
+            <br />
+            Intelligence
+          </motion.h1>
 
-            <motion.p
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.25, ease: "easeOut" }}
-              className="text-base md:text-lg text-[#7A8499] mb-10 max-w-xl mx-auto leading-relaxed"
-            >
-              Two AI systems working together — monitor SEAP tenders automatically and discover off-market investment opportunities before the competition.
-            </motion.p>
-
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.35, ease: "easeOut" }}
-              className="flex items-center justify-center gap-8 text-sm text-[#7A8499]"
-            >
-              <span className="flex items-center gap-2">
-                <Zap className="w-3.5 h-3.5 text-[#3B7BF5]" />
-                Deterministic scraping
-              </span>
-              <span className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E]" />
-                AI analysis only
-              </span>
-              <span>Romania-wide coverage</span>
-            </motion.div>
-          </div>
+          {/* Subtitle */}
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
+            style={{
+              fontSize: 18,
+              color: "#64748b",
+              lineHeight: 1.65,
+              maxWidth: 560,
+              margin: "0 auto",
+            }}
+          >
+            Two AI systems working together — monitor SEAP tenders automatically and discover
+            off-market investment opportunities before the competition.
+          </motion.p>
         </div>
       </section>
 
-      {/* Stats Row */}
-      <section className="py-4">
-        <div className="max-w-5xl mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {stats.map((s, i) => (
-              <motion.div
-                key={s.label}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 + 0.05 * i, ease: "easeOut" }}
-                className={`bg-[#13161C] border border-[#252A35] border-l-2 ${s.borderColor} rounded-xl p-4 text-center`}
-              >
-                <s.icon className={`w-5 h-5 mx-auto mb-2 ${s.textColor}`} />
-                <p className="text-2xl font-bold text-[#E8ECF4]">
+      {/* ── Section 2: Stats Row ─────────────────────────────────────────────── */}
+      <section
+        style={{
+          backgroundColor: "#ffffff",
+          paddingBottom: 100,
+          paddingLeft: 40,
+          paddingRight: 40,
+        }}
+      >
+        <div
+          style={{
+            maxWidth: 960,
+            margin: "0 auto",
+            display: "grid",
+            gridTemplateColumns: "repeat(4, 1fr)",
+            gap: 16,
+          }}
+          className="!grid-cols-2 sm:!grid-cols-4"
+        >
+          {stats.map((s, i) => (
+            <motion.div
+              key={s.label}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: i * 0.08, ease: "easeOut" }}
+            >
+              <CardWrapper style={{ padding: 24, textAlign: "center" }}>
+                <s.icon
+                  size={20}
+                  style={{ color: s.accentColor, margin: "0 auto 12px", display: "block" }}
+                />
+                <p
+                  style={{
+                    fontSize: 32,
+                    fontWeight: 800,
+                    color: "#0f172a",
+                    letterSpacing: "-0.03em",
+                    margin: "0 0 4px",
+                    lineHeight: 1,
+                  }}
+                >
                   {s.value !== undefined ? (
                     <AnimatedCounter target={s.value} />
                   ) : (
                     s.valueStr
                   )}
                 </p>
-                <p className="text-xs text-[#E8ECF4] font-medium">{s.label}</p>
-                <p className="text-[10px] text-[#7A8499] mt-0.5">{s.sub}</p>
-              </motion.div>
-            ))}
-          </div>
+                <p
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: "#0f172a",
+                    margin: "0 0 4px",
+                  }}
+                >
+                  {s.label}
+                </p>
+                <p style={{ fontSize: 11, color: "#94a3b8", margin: 0 }}>{s.sub}</p>
+              </CardWrapper>
+            </motion.div>
+          ))}
         </div>
       </section>
 
-      {/* Divider */}
-      <div className="max-w-24 mx-auto border-t border-[#252A35] my-8" />
-
-      {/* System Cards */}
-      <section className="py-12 md:py-20">
-        <div className="max-w-5xl mx-auto px-6">
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5, ease: "easeOut" }}
-            className="text-center text-xs uppercase tracking-[0.2em] text-[#7A8499] font-medium mb-14"
+      {/* ── Section 3: Systems ───────────────────────────────────────────────── */}
+      <section
+        style={{
+          backgroundColor: "#f6f7f8",
+          paddingTop: 100,
+          paddingBottom: 100,
+          paddingLeft: 40,
+          paddingRight: 40,
+        }}
+      >
+        <div style={{ maxWidth: 960, margin: "0 auto" }}>
+          {/* Eyebrow + heading */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            style={{ textAlign: "center", marginBottom: 56 }}
           >
-            Explore the live demos
-          </motion.p>
+            <p
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                color: "#E31E24",
+                marginBottom: 12,
+              }}
+            >
+              Platform
+            </p>
+            <h2
+              style={{
+                fontSize: "clamp(28px, 4vw, 40px)",
+                fontWeight: 800,
+                color: "#0f172a",
+                letterSpacing: "-0.03em",
+                margin: 0,
+              }}
+            >
+              Three Integrated Systems
+            </h2>
+          </motion.div>
 
-          <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-5">
+          {/* 2×2 grid */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(2, 1fr)",
+              gap: 20,
+            }}
+            className="!grid-cols-1 md:!grid-cols-2"
+          >
             {systems.map((sys, i) => (
               <motion.div
                 key={sys.href}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.55 + 0.08 * i, ease: "easeOut" }}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: i * 0.08, ease: "easeOut" }}
               >
-                <Link href={sys.href} className="block group h-full">
-                  <div className="relative h-full bg-[#13161C] border border-[#252A35] rounded-2xl p-6 transition-colors duration-200 hover:border-[#343B4A] hover:bg-[#1A1E27]">
-                    <div
-                      className="w-10 h-10 rounded-xl bg-[#0C0E12] border border-[#252A35] flex items-center justify-center mb-5 transition-colors duration-200 group-hover:border-[#343B4A]"
-                    >
-                      <sys.icon className="w-5 h-5 text-[#4A5268] group-hover:text-[#E8ECF4] transition-colors duration-200" style={{ color: undefined }} />
-                    </div>
-
-                    <h3 className="text-base font-semibold text-[#E8ECF4] mb-2">{sys.title}</h3>
-                    <p className="text-sm text-[#7A8499] leading-relaxed mb-5">{sys.description}</p>
-
-                    <div className="space-y-2 mb-6">
-                      {sys.highlights.map((h, j) => (
-                        <div key={j} className="flex items-center gap-2 text-sm">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-[#3B7BF5]/60 flex-shrink-0" />
-                          <span className="text-[#7A8499]">{h}</span>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="flex items-center gap-1.5 text-sm font-medium text-[#3B7BF5] group-hover:gap-2.5 transition-all mt-auto">
-                      View Demo <ArrowRight className="w-3.5 h-3.5" />
-                    </div>
+                <CardWrapper style={{ padding: 28 }}>
+                  {/* Icon */}
+                  <div
+                    style={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: 10,
+                      backgroundColor: "#f6f7f8",
+                      border: "1px solid #e8eaed",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      marginBottom: 20,
+                    }}
+                  >
+                    <sys.icon size={20} style={{ color: "#64748b" }} />
                   </div>
-                </Link>
+
+                  {/* Title + description */}
+                  <h3
+                    style={{
+                      fontSize: 17,
+                      fontWeight: 700,
+                      color: "#0f172a",
+                      letterSpacing: "-0.02em",
+                      margin: "0 0 10px",
+                    }}
+                  >
+                    {sys.title}
+                  </h3>
+                  <p
+                    style={{
+                      fontSize: 14,
+                      color: "#64748b",
+                      lineHeight: 1.65,
+                      margin: "0 0 20px",
+                    }}
+                  >
+                    {sys.description}
+                  </p>
+
+                  {/* Links */}
+                  <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
+                    {sys.links.map(link => (
+                      <Link
+                        key={link.label}
+                        href={link.href}
+                        style={{
+                          fontSize: 13,
+                          fontWeight: 600,
+                          color: "#E31E24",
+                          textDecoration: "none",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 4,
+                        }}
+                      >
+                        {link.label} <ArrowRight size={13} />
+                      </Link>
+                    ))}
+                  </div>
+                </CardWrapper>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-8 border-t border-[#252A35]">
-        <div className="max-w-5xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex flex-col sm:flex-row items-center gap-3 text-center sm:text-left">
-            <p className="text-xs text-[#7A8499]">
-              Connected to SEAP e-licitatie.ro — Real tender data from Romanian public procurement
+      {/* ── Section 4: Investment ────────────────────────────────────────────── */}
+      <section
+        style={{
+          backgroundColor: "#ffffff",
+          paddingTop: 100,
+          paddingBottom: 100,
+          paddingLeft: 40,
+          paddingRight: 40,
+        }}
+      >
+        <div style={{ maxWidth: 960, margin: "0 auto", display: "flex", justifyContent: "center" }}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            style={{
+              backgroundColor: "#0f172a",
+              borderRadius: 16,
+              padding: "48px 48px",
+              maxWidth: 700,
+              width: "100%",
+              color: "#ffffff",
+            }}
+          >
+            {/* Eyebrow */}
+            <p
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                color: "#E31E24",
+                marginBottom: 12,
+              }}
+            >
+              Investment
             </p>
-            <span className="hidden sm:inline text-[#4A5268]">|</span>
-            <p className="text-[11px] text-[#4A5268]">
-              Powered by: OpenSSL | pdfminer | Tesseract OCR | Claude AI
+
+            {/* Title + price */}
+            <h2
+              style={{
+                fontSize: 28,
+                fontWeight: 800,
+                letterSpacing: "-0.03em",
+                margin: "0 0 8px",
+              }}
+            >
+              Complete Platform
+            </h2>
+            <p
+              style={{
+                fontSize: 52,
+                fontWeight: 800,
+                letterSpacing: "-0.03em",
+                margin: "0 0 4px",
+                lineHeight: 1,
+              }}
+            >
+              $11,000
             </p>
-          </div>
-          <p className="text-xs text-[#7A8499] flex-shrink-0">
-            Built by <span className="text-[#3B7BF5] font-medium">NextAutomation</span>
-          </p>
+            <p
+              style={{
+                fontSize: 14,
+                color: "#94a3b8",
+                marginBottom: 36,
+              }}
+            >
+              <s style={{ opacity: 0.5 }}>was $13,000</s>&nbsp;&nbsp;50% upfront · 50% at delivery
+            </p>
+
+            {/* Divider */}
+            <div style={{ height: 1, backgroundColor: "rgba(255,255,255,0.1)", marginBottom: 32 }} />
+
+            {/* Two columns */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: 32,
+              }}
+              className="!grid-cols-1 md:!grid-cols-2"
+            >
+              {/* Build column */}
+              <div>
+                <p
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 700,
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                    color: "#94a3b8",
+                    marginBottom: 16,
+                  }}
+                >
+                  Build Includes
+                </p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {included.map(item => (
+                    <div key={item} style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+                      <CheckCircle2
+                        size={15}
+                        style={{ color: "#22C55E", flexShrink: 0, marginTop: 2 }}
+                      />
+                      <span style={{ fontSize: 14, color: "#e2e8f0", lineHeight: 1.5 }}>
+                        {item}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Ongoing column */}
+              <div>
+                <p
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 700,
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                    color: "#94a3b8",
+                    marginBottom: 16,
+                  }}
+                >
+                  After Delivery
+                </p>
+                <div style={{ marginBottom: 16 }}>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: "#ffffff", marginBottom: 8 }}>
+                    Managed — $600/mo
+                  </p>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {managedFeatures.map(f => (
+                      <div key={f} style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+                        <CheckCircle2
+                          size={14}
+                          style={{ color: "#22C55E", flexShrink: 0, marginTop: 2 }}
+                        />
+                        <span style={{ fontSize: 13, color: "#94a3b8" }}>{f}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: "#ffffff", marginBottom: 8 }}>
+                    Handoff — $0/mo
+                  </p>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {handoffFeatures.map(f => (
+                      <div key={f} style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+                        <CheckCircle2
+                          size={14}
+                          style={{ color: "#64748b", flexShrink: 0, marginTop: 2 }}
+                        />
+                        <span style={{ fontSize: 13, color: "#94a3b8" }}>{f}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
         </div>
-      </footer>
+      </section>
+
+      {/* ── Section 5: CTA ───────────────────────────────────────────────────── */}
+      <section
+        style={{
+          backgroundColor: "#f6f7f8",
+          paddingTop: 80,
+          paddingBottom: 80,
+          paddingLeft: 40,
+          paddingRight: 40,
+          textAlign: "center",
+        }}
+      >
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+        >
+          <p
+            style={{
+              fontSize: 14,
+              color: "#64748b",
+              marginBottom: 20,
+            }}
+          >
+            Ready to see how we work together?
+          </p>
+          <Link
+            href="/collaboration"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              fontSize: 15,
+              fontWeight: 700,
+              color: "#E31E24",
+              textDecoration: "none",
+              padding: "14px 28px",
+              borderRadius: 10,
+              border: "2px solid #E31E24",
+              transition: "all 0.2s ease",
+              letterSpacing: "-0.01em",
+            }}
+            onMouseEnter={e => {
+              const el = e.currentTarget as HTMLElement
+              el.style.backgroundColor = "#E31E24"
+              el.style.color = "#ffffff"
+            }}
+            onMouseLeave={e => {
+              const el = e.currentTarget as HTMLElement
+              el.style.backgroundColor = "transparent"
+              el.style.color = "#E31E24"
+            }}
+          >
+            See How We Work Together <ArrowRight size={16} />
+          </Link>
+        </motion.div>
+      </section>
     </div>
   )
 }

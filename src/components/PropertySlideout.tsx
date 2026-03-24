@@ -19,7 +19,7 @@ function ScoreBadge({ score }: { score: number }) {
     ? "bg-[#22C55E]/10 text-[#22C55E] border-[#22C55E]/20"
     : score >= 70
     ? "bg-[#F59E0B]/10 text-[#F59E0B] border-[#F59E0B]/20"
-    : "bg-[#4A5268]/20 text-[#7A8499] border-[#4A5268]/30"
+    : "bg-[#94a3b8]/10 text-[#64748b] border-[#94a3b8]/20"
   return (
     <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-sm font-bold border ${cls}`}>
       {score}
@@ -28,13 +28,8 @@ function ScoreBadge({ score }: { score: number }) {
 }
 
 function DiscountBadge({ percent }: { percent: number }) {
-  const cls = percent >= 30
-    ? "bg-[#22C55E]/20 text-[#22C55E] border border-[#22C55E]/30"
-    : percent >= 20
-    ? "bg-[#22C55E]/15 text-[#22C55E] border border-[#22C55E]/20"
-    : "bg-[#22C55E]/10 text-[#22C55E] border border-[#22C55E]/15"
   return (
-    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-sm font-bold ${cls}`}>
+    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-sm font-bold bg-[#22C55E]/10 text-[#22C55E] border border-[#22C55E]/20">
       -{percent}%
     </span>
   )
@@ -67,45 +62,45 @@ export default function PropertySlideout({
       transition={{ ease: "easeOut" }}
       className="fixed inset-0 z-50 flex justify-end"
     >
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
 
       <motion.div
         initial={{ x: "100%" }}
         animate={{ x: 0 }}
         exit={{ x: "100%" }}
         transition={{ ease: "easeOut", duration: 0.3 }}
-        className="relative w-full md:max-w-xl bg-[#13161C] border-l border-[#252A35] shadow-2xl overflow-y-auto"
+        className="relative w-full md:max-w-xl bg-white border-l border-[#e8eaed] shadow-2xl overflow-y-auto"
       >
         {/* Sticky Header */}
-        <div className="sticky top-0 z-10 bg-[#0C0E12] border-b border-[#252A35] px-6 py-4">
+        <div className="sticky top-0 z-10 bg-white border-b border-[#e8eaed] px-6 py-4">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-mono text-[#4A5268]">{investment.id}</span>
+              <span className="text-xs font-mono text-[#94a3b8]">{investment.id}</span>
               <ScoreBadge score={investment.investmentScore} />
               <DiscountBadge percent={investment.discountPercent} />
             </div>
             <div className="flex items-center gap-1">
               {onPrev && (
-                <button onClick={onPrev} className="p-1.5 rounded-lg hover:bg-[#1A1E27] text-[#7A8499] hover:text-[#E8ECF4] transition-colors duration-200">
+                <button onClick={onPrev} className="p-1.5 rounded-lg hover:bg-[#f6f7f8] text-[#64748b] hover:text-[#0f172a] transition-colors duration-200">
                   <ChevronLeft className="w-4 h-4" />
                 </button>
               )}
               {onNext && (
-                <button onClick={onNext} className="p-1.5 rounded-lg hover:bg-[#1A1E27] text-[#7A8499] hover:text-[#E8ECF4] transition-colors duration-200">
+                <button onClick={onNext} className="p-1.5 rounded-lg hover:bg-[#f6f7f8] text-[#64748b] hover:text-[#0f172a] transition-colors duration-200">
                   <ChevronRight className="w-4 h-4" />
                 </button>
               )}
-              <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-[#1A1E27] text-[#7A8499] hover:text-[#E8ECF4] transition-colors duration-200 ml-2">
+              <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-[#f6f7f8] text-[#64748b] hover:text-[#0f172a] transition-colors duration-200 ml-2">
                 <X className="w-4 h-4" />
               </button>
             </div>
           </div>
           <div className="flex items-center gap-2 mb-1">
-            <TypeIcon className="w-4 h-4 text-[#3B7BF5]" />
-            <span className="text-xs font-medium text-[#3B7BF5] uppercase">{investment.type}</span>
+            <TypeIcon className="w-4 h-4 text-[#E31E24]" />
+            <span className="text-xs font-medium text-[#E31E24] uppercase">{investment.type}</span>
           </div>
-          <h2 className="text-lg font-bold text-[#E8ECF4] leading-tight">{investment.title}</h2>
-          <p className="text-sm text-[#7A8499] mt-1 flex items-center gap-1">
+          <h2 className="text-lg font-bold text-[#0f172a] leading-tight">{investment.title}</h2>
+          <p className="text-sm text-[#64748b] mt-1 flex items-center gap-1">
             <MapPin className="w-3.5 h-3.5" /> {investment.location}
           </p>
         </div>
@@ -120,45 +115,45 @@ export default function PropertySlideout({
               ...(investment.yearBuilt ? [{ label: "Year Built", value: investment.yearBuilt.toString(), sub: `${new Date().getFullYear() - investment.yearBuilt} years old`, icon: CalendarDays }] : []),
               ...(investment.auctionDate ? [{ label: "Auction Date", value: investment.auctionDate, sub: `${Math.max(0, Math.ceil((new Date(investment.auctionDate).getTime() - Date.now()) / 86400000))} days left`, icon: Calendar }] : []),
             ].map(m => (
-              <div key={m.label} className="bg-[#0C0E12] border border-[#252A35] rounded-xl p-3">
+              <div key={m.label} style={{ borderRadius: 12, border: '1px solid #e8eaed', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }} className="bg-[#f6f7f8] p-3">
                 <div className="flex items-center gap-1.5 mb-1">
-                  <m.icon className="w-3.5 h-3.5 text-[#4A5268]" />
-                  <span className="text-[10px] text-[#7A8499] uppercase tracking-wider">{m.label}</span>
+                  <m.icon className="w-3.5 h-3.5 text-[#94a3b8]" />
+                  <span className="text-[10px] text-[#64748b] uppercase tracking-wider">{m.label}</span>
                 </div>
-                <p className="text-sm font-bold text-[#E8ECF4]">{m.value}</p>
-                <p className="text-[10px] text-[#7A8499]">{m.sub}</p>
+                <p className="text-sm font-bold text-[#0f172a]">{m.value}</p>
+                <p className="text-[10px] text-[#64748b]">{m.sub}</p>
               </div>
             ))}
           </div>
 
           {/* Savings Highlight */}
-          <div className="bg-[#22C55E]/10 border border-[#22C55E]/20 rounded-xl p-4 text-center">
+          <div className="bg-[#22C55E]/8 border border-[#22C55E]/20 rounded-xl p-4 text-center">
             <p className="text-xs text-[#22C55E] font-medium uppercase tracking-wider mb-1">Potential Savings</p>
             <p className="text-3xl font-bold text-[#22C55E]">{fmtEUR(investment.marketValueEUR - investment.listedPriceEUR)}</p>
-            <p className="text-xs text-[#22C55E]/60 mt-1">below estimated market value</p>
+            <p className="text-xs text-[#22C55E]/70 mt-1">below estimated market value</p>
           </div>
 
           {/* AI Analysis */}
-          <div className="bg-[#3B7BF5]/5 border-l-2 border-[#3B7BF5] rounded-r-xl p-5">
-            <h3 className="flex items-center gap-2 text-sm font-bold text-[#E8ECF4] mb-3">
-              <Brain className="w-4 h-4 text-[#3B7BF5]" />
+          <div style={{ background: '#E31E2408', borderLeft: '2px solid #E31E24', borderRadius: '0 12px 12px 0' }} className="p-5">
+            <h3 className="flex items-center gap-2 text-sm font-bold text-[#0f172a] mb-3">
+              <Brain className="w-4 h-4 text-[#E31E24]" />
               AI Investment Analysis
             </h3>
 
-            <p className="text-sm text-[#7A8499] leading-relaxed mb-4">{investment.analysis.thesis}</p>
+            <p className="text-sm text-[#64748b] leading-relaxed mb-4">{investment.analysis.thesis}</p>
 
             <div className="space-y-4">
               <div>
-                <h4 className="text-xs font-semibold text-[#7A8499] uppercase tracking-wider mb-2">Comparable Sales</h4>
+                <h4 className="text-xs font-semibold text-[#64748b] uppercase tracking-wider mb-2">Comparable Sales</h4>
                 <div className="space-y-1.5">
                   {investment.analysis.comparables.map((comp, i) => (
-                    <p key={i} className="text-xs text-[#7A8499] pl-3 border-l-2 border-[#3B7BF5]/30">{comp}</p>
+                    <p key={i} className="text-xs text-[#64748b] pl-3 border-l-2 border-[#e8eaed]">{comp}</p>
                   ))}
                 </div>
               </div>
 
               <div>
-                <h4 className="text-xs font-semibold text-[#7A8499] uppercase tracking-wider mb-2">Risk Assessment</h4>
+                <h4 className="text-xs font-semibold text-[#64748b] uppercase tracking-wider mb-2">Risk Assessment</h4>
                 <div className="space-y-1.5">
                   {investment.analysis.risks.map((risk, i) => (
                     <div key={i} className="flex items-start gap-2 text-xs text-[#EF4444]/80">
@@ -170,14 +165,14 @@ export default function PropertySlideout({
               </div>
 
               <div>
-                <h4 className="text-xs font-semibold text-[#7A8499] uppercase tracking-wider mb-2">ROI Scenarios</h4>
+                <h4 className="text-xs font-semibold text-[#64748b] uppercase tracking-wider mb-2">ROI Scenarios</h4>
                 <div className="space-y-2">
                   {investment.analysis.roiScenarios.map((scenario, i) => (
-                    <div key={i} className={`flex items-center justify-between rounded-lg px-3 py-2 border border-[#252A35] ${i % 2 === 1 ? "bg-[#1A1E27]" : "bg-[#0C0E12]"}`}>
-                      <span className="text-xs text-[#7A8499]">{scenario.label}</span>
+                    <div key={i} className={`flex items-center justify-between rounded-lg px-3 py-2 border border-[#e8eaed] ${i % 2 === 1 ? "bg-[#f6f7f8]" : "bg-white"}`}>
+                      <span className="text-xs text-[#64748b]">{scenario.label}</span>
                       <div className="flex items-center gap-4">
                         <span className="text-xs font-bold text-[#22C55E]">{scenario.annualReturn}%/yr</span>
-                        <span className="text-[10px] text-[#4A5268]">{scenario.totalReturn5yr}% in 5yr</span>
+                        <span className="text-[10px] text-[#94a3b8]">{scenario.totalReturn5yr}% in 5yr</span>
                       </div>
                     </div>
                   ))}
@@ -188,28 +183,30 @@ export default function PropertySlideout({
 
           {/* Cadastre / Source Info */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="bg-[#0C0E12] border border-[#252A35] rounded-xl p-3">
-              <p className="text-[10px] text-[#7A8499] uppercase tracking-wider mb-1">Cadastre Ref</p>
-              <p className="text-xs font-mono text-[#E8ECF4]">{investment.cadastreRef}</p>
+            <div style={{ borderRadius: 12, border: '1px solid #e8eaed' }} className="bg-[#f6f7f8] p-3">
+              <p className="text-[10px] text-[#64748b] uppercase tracking-wider mb-1">Cadastre Ref</p>
+              <p className="text-xs font-mono text-[#0f172a]">{investment.cadastreRef}</p>
             </div>
-            <div className="bg-[#0C0E12] border border-[#252A35] rounded-xl p-3">
-              <p className="text-[10px] text-[#7A8499] uppercase tracking-wider mb-1">Source</p>
-              <p className="text-xs font-medium text-[#E8ECF4]">{investment.source}</p>
+            <div style={{ borderRadius: 12, border: '1px solid #e8eaed' }} className="bg-[#f6f7f8] p-3">
+              <p className="text-[10px] text-[#64748b] uppercase tracking-wider mb-1">Source</p>
+              <p className="text-xs font-medium text-[#0f172a]">{investment.source}</p>
             </div>
             {investment.contactInfo && (
-              <div className="col-span-2 bg-[#0C0E12] border border-[#252A35] rounded-xl p-3">
-                <p className="text-[10px] text-[#7A8499] uppercase tracking-wider mb-1">Contact</p>
-                <p className="text-xs text-[#E8ECF4]">{investment.contactInfo}</p>
+              <div className="col-span-2" style={{ borderRadius: 12, border: '1px solid #e8eaed' }}>
+                <div className="bg-[#f6f7f8] p-3 rounded-xl">
+                  <p className="text-[10px] text-[#64748b] uppercase tracking-wider mb-1">Contact</p>
+                  <p className="text-xs text-[#0f172a]">{investment.contactInfo}</p>
+                </div>
               </div>
             )}
           </div>
 
           {/* Actions */}
           <div className="flex gap-2 pt-2">
-            <button className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-[#3B7BF5] text-white rounded-lg text-sm font-medium hover:bg-[#2E6AE0] transition-colors duration-200">
+            <button className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-[#E31E24] text-white rounded-lg text-sm font-medium hover:bg-[#c91a22] transition-colors duration-200">
               <Download className="w-4 h-4" /> Export Report
             </button>
-            <button className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-[#1A1E27] border border-[#343B4A] text-[#E8ECF4] rounded-lg text-sm font-medium hover:bg-[#252A35] transition-colors duration-200">
+            <button className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-[#e8eaed] text-[#0f172a] rounded-lg text-sm font-medium hover:bg-[#f6f7f8] transition-colors duration-200">
               <Star className="w-4 h-4" /> Shortlist
             </button>
           </div>

@@ -1,19 +1,47 @@
 export default function Footer() {
   return (
-    <footer className="py-8 border-t border-[#252A35] mt-12 bg-[#0C0E12]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div className="flex flex-col sm:flex-row items-center gap-3 text-center sm:text-left">
-          <p className="text-xs text-[#7A8499]">
-            Connected to SEAP e-licitatie.ro — Real tender data from Romanian public procurement
-          </p>
-          <span className="hidden sm:inline text-[#4A5268]">|</span>
-          <p className="text-[11px] text-[#4A5268]">
-            Powered by: OpenSSL | pdfminer | Tesseract OCR | Claude AI
-          </p>
-        </div>
-        <p className="text-xs text-[#7A8499] flex-shrink-0">
-          Built by <span className="text-[#3B7BF5] font-medium">NextAutomation</span>
+    <footer
+      style={{
+        backgroundColor: "#ffffff",
+        borderTop: "1px solid #e8eaed",
+        padding: "40px 40px",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: 960,
+          margin: "0 auto",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 8,
+          textAlign: "center",
+        }}
+      >
+        <p style={{ fontSize: 14, color: "#64748b", margin: 0 }}>
+          Built by{" "}
+          <span style={{ color: "#E31E24", fontWeight: 600 }}>NextAutomation</span>
         </p>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 16,
+            fontSize: 12,
+            color: "#94a3b8",
+          }}
+        >
+          <a
+            href="https://nextautomation.us"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: "#94a3b8", textDecoration: "none" }}
+          >
+            nextautomation.us
+          </a>
+          <span>·</span>
+          <span>© 2026 NextAutomation</span>
+        </div>
       </div>
     </footer>
   )

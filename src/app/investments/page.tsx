@@ -24,7 +24,7 @@ function ScoreBadge({ score }: { score: number }) {
     ? "bg-[#22C55E]/10 text-[#22C55E] border-[#22C55E]/20"
     : score >= 70
     ? "bg-[#F59E0B]/10 text-[#F59E0B] border-[#F59E0B]/20"
-    : "bg-[#4A5268]/20 text-[#7A8499] border-[#4A5268]/30"
+    : "bg-[#94a3b8]/10 text-[#64748b] border-[#94a3b8]/20"
   return (
     <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold border ${cls}`}>
       {score}
@@ -34,10 +34,10 @@ function ScoreBadge({ score }: { score: number }) {
 
 function StatusBadge({ status }: { status: Investment["status"] }) {
   const styles: Record<string, string> = {
-    new: "bg-[#3B7BF5]/10 text-[#60A5FA] border-[#3B7BF5]/20",
+    new: "bg-[#3B82F6]/10 text-[#3B82F6] border-[#3B82F6]/20",
     analyzing: "bg-[#F59E0B]/10 text-[#F59E0B] border-[#F59E0B]/20",
     shortlisted: "bg-[#22C55E]/10 text-[#22C55E] border-[#22C55E]/20",
-    passed: "bg-[#4A5268]/20 text-[#7A8499] border-[#4A5268]/30",
+    passed: "bg-[#94a3b8]/10 text-[#64748b] border-[#94a3b8]/20",
   }
   return (
     <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider border ${styles[status]}`}>
@@ -48,25 +48,20 @@ function StatusBadge({ status }: { status: Investment["status"] }) {
 
 function TypeIcon({ type }: { type: Investment["type"] }) {
   if (type === "Land") return <LandPlot className="w-4 h-4 text-[#22C55E]" />
-  if (type === "Building") return <Building2 className="w-4 h-4 text-[#3B7BF5]" />
+  if (type === "Building") return <Building2 className="w-4 h-4 text-[#3B82F6]" />
   return <Building2 className="w-4 h-4 text-[#A855F7]" />
 }
 
 function DiscountBadge({ percent }: { percent: number }) {
-  const cls = percent >= 30
-    ? "bg-[#22C55E]/20 text-[#22C55E] border border-[#22C55E]/30"
-    : percent >= 20
-    ? "bg-[#22C55E]/15 text-[#22C55E] border border-[#22C55E]/20"
-    : "bg-[#22C55E]/10 text-[#22C55E] border border-[#22C55E]/15"
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${cls}`}>
+    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#22C55E]/10 text-[#22C55E] border border-[#22C55E]/20">
       -{percent}%
     </span>
   )
 }
 
 const sourceColors: Record<string, string> = {
-  "ANAF": "text-[#3B7BF5]",
+  "ANAF": "text-[#3B82F6]",
   "UNPIR": "text-[#F59E0B]",
   "imobiliare.ro": "text-[#22C55E]",
   "storia.ro": "text-[#F97316]",
@@ -75,12 +70,12 @@ const sourceColors: Record<string, string> = {
 }
 
 const sourceBarColors: Record<string, string> = {
-  "ANAF": "bg-[#3B7BF5]/50",
-  "UNPIR": "bg-[#F59E0B]/50",
-  "imobiliare.ro": "bg-[#22C55E]/50",
-  "storia.ro": "bg-[#F97316]/50",
-  "executari.com": "bg-[#EF4444]/50",
-  "ANABI": "bg-[#A855F7]/50",
+  "ANAF": "bg-[#3B82F6]/40",
+  "UNPIR": "bg-[#F59E0B]/40",
+  "imobiliare.ro": "bg-[#22C55E]/40",
+  "storia.ro": "bg-[#F97316]/40",
+  "executari.com": "bg-[#EF4444]/40",
+  "ANABI": "bg-[#A855F7]/40",
 }
 
 type SortKey = "investmentScore" | "discountPercent" | "marketValueEUR"
@@ -196,15 +191,15 @@ export default function InvestmentsPage() {
   }, [hiddenInvestments])
 
   return (
-    <div className="min-h-screen bg-[#0C0E12]">
+    <div className="min-h-screen bg-white">
       <Navbar />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         {/* Top Bar */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-semibold text-[#E8ECF4] tracking-tight">Investment Finder</h1>
-            <p className="text-sm text-[#7A8499] flex items-center gap-2 mt-1">
+            <h1 className="text-2xl font-semibold text-[#0f172a] tracking-tight">Investment Finder</h1>
+            <p className="text-sm text-[#64748b] flex items-center gap-2 mt-1">
               <span className="w-2 h-2 rounded-full bg-[#22C55E] animate-pulse" />
               {investmentStats.sourcesActive} sources active — Last scan: {new Date(investmentStats.lastScanTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
             </p>
@@ -214,9 +209,9 @@ export default function InvestmentsPage() {
               onClick={runScan}
               disabled={scanning || scanComplete}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
-                scanning ? "bg-[#3B7BF5] text-white animate-pulse cursor-wait"
-                : scanComplete ? "bg-[#22C55E]/20 text-[#22C55E] border border-[#22C55E]/30 cursor-default"
-                : "bg-[#3B7BF5] text-white hover:bg-[#2E6AE0] shadow-lg shadow-[#3B7BF5]/20"
+                scanning ? "bg-[#E31E24] text-white animate-pulse cursor-wait"
+                : scanComplete ? "bg-[#22C55E]/10 text-[#22C55E] border border-[#22C55E]/30 cursor-default"
+                : "bg-[#E31E24] text-white hover:bg-[#c91a22] shadow-sm"
               }`}
             >
               <Radar className={`w-4 h-4 ${scanning ? "animate-spin" : ""}`} />
@@ -226,8 +221,8 @@ export default function InvestmentsPage() {
               onClick={() => setShowFilters(!showFilters)}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
                 showFilters
-                  ? "bg-[#3B7BF5]/10 text-[#3B7BF5] border border-[#3B7BF5]/20"
-                  : "border border-[#252A35] text-[#7A8499] hover:bg-[#1A1E27] hover:text-[#E8ECF4]"
+                  ? "bg-[#E31E24]/8 text-[#E31E24] border border-[#E31E24]/20"
+                  : "border border-[#e8eaed] text-[#64748b] hover:bg-[#f6f7f8] hover:text-[#0f172a]"
               }`}
             >
               <SlidersHorizontal className="w-4 h-4" /> Filters
@@ -245,16 +240,16 @@ export default function InvestmentsPage() {
               transition={{ ease: "easeOut" }}
               className="overflow-hidden mb-6"
             >
-              <div className="bg-[#60A5FA]/5 border border-[#60A5FA]/20 rounded-xl p-4">
+              <div className="bg-[#E31E24]/5 border border-[#E31E24]/20 rounded-xl p-4">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-[#60A5FA]">
+                  <span className="text-sm font-medium text-[#E31E24]">
                     {scanStep < scanSteps.length ? scanSteps[scanStep].label : `Scan complete — ${hiddenInvestments.length} new opportunities found`}
                   </span>
-                  <span className="text-xs text-[#7A8499] font-mono">{Math.round(scanProgress)}%</span>
+                  <span className="text-xs text-[#64748b] font-mono">{Math.round(scanProgress)}%</span>
                 </div>
-                <div className="w-full h-2 bg-[#1A1E27] rounded-full overflow-hidden">
+                <div className="w-full h-2 bg-[#f6f7f8] rounded-full overflow-hidden">
                   <motion.div
-                    className="h-full bg-[#60A5FA] rounded-full"
+                    className="h-full bg-[#E31E24] rounded-full"
                     style={{ width: `${scanProgress}%` }}
                     transition={{ duration: 0.1 }}
                   />
@@ -262,8 +257,8 @@ export default function InvestmentsPage() {
                 <div className="flex items-center gap-3 mt-2">
                   {scanSteps.map((s, i) => (
                     <div key={i} className="flex items-center gap-1">
-                      <span className={`w-2 h-2 rounded-full ${i < scanStep ? "bg-[#22C55E]" : i === scanStep ? "bg-[#60A5FA] animate-pulse" : "bg-[#252A35]"}`} />
-                      <span className={`text-[10px] hidden sm:inline ${i <= scanStep ? "text-[#7A8499]" : "text-[#4A5268]"}`}>
+                      <span className={`w-2 h-2 rounded-full ${i < scanStep ? "bg-[#22C55E]" : i === scanStep ? "bg-[#E31E24] animate-pulse" : "bg-[#e8eaed]"}`} />
+                      <span className={`text-[10px] hidden sm:inline ${i <= scanStep ? "text-[#64748b]" : "text-[#94a3b8]"}`}>
                         {i < 5 ? "Deterministic" : "AI"}
                       </span>
                     </div>
@@ -284,35 +279,35 @@ export default function InvestmentsPage() {
               transition={{ ease: "easeOut" }}
               className="overflow-hidden mb-4"
             >
-              <div className="bg-[#13161C] border border-[#252A35] rounded-xl p-4 flex flex-wrap items-center gap-4">
+              <div className="bg-white border border-[#e8eaed] rounded-xl p-4 flex flex-wrap items-center gap-4">
                 <div>
-                  <label className="text-[10px] text-[#7A8499] uppercase tracking-wider block mb-1">Type</label>
+                  <label className="text-[10px] text-[#64748b] uppercase tracking-wider block mb-1">Type</label>
                   <select
                     value={typeFilter}
                     onChange={e => setTypeFilter(e.target.value)}
-                    className="text-sm border border-[#252A35] rounded-lg px-3 py-1.5 bg-[#0C0E12] text-[#E8ECF4] focus:outline-none focus:border-[#3B7BF5]"
+                    className="text-sm border border-[#e8eaed] rounded-lg px-3 py-1.5 bg-white text-[#0f172a] focus:outline-none focus:border-[#E31E24]"
                   >
                     <option value="all">All Types</option>
                     {types.map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="text-[10px] text-[#7A8499] uppercase tracking-wider block mb-1">Source</label>
+                  <label className="text-[10px] text-[#64748b] uppercase tracking-wider block mb-1">Source</label>
                   <select
                     value={sourceFilter}
                     onChange={e => setSourceFilter(e.target.value)}
-                    className="text-sm border border-[#252A35] rounded-lg px-3 py-1.5 bg-[#0C0E12] text-[#E8ECF4] focus:outline-none focus:border-[#3B7BF5]"
+                    className="text-sm border border-[#e8eaed] rounded-lg px-3 py-1.5 bg-white text-[#0f172a] focus:outline-none focus:border-[#E31E24]"
                   >
                     <option value="all">All Sources</option>
                     {sources.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="text-[10px] text-[#7A8499] uppercase tracking-wider block mb-1">Sort By</label>
+                  <label className="text-[10px] text-[#64748b] uppercase tracking-wider block mb-1">Sort By</label>
                   <select
                     value={sortBy}
                     onChange={e => setSortBy(e.target.value as SortKey)}
-                    className="text-sm border border-[#252A35] rounded-lg px-3 py-1.5 bg-[#0C0E12] text-[#E8ECF4] focus:outline-none focus:border-[#3B7BF5]"
+                    className="text-sm border border-[#e8eaed] rounded-lg px-3 py-1.5 bg-white text-[#0f172a] focus:outline-none focus:border-[#E31E24]"
                   >
                     <option value="investmentScore">Investment Score</option>
                     <option value="discountPercent">Discount %</option>
@@ -321,7 +316,7 @@ export default function InvestmentsPage() {
                 </div>
                 <button
                   onClick={() => setSortDir(d => d === "desc" ? "asc" : "desc")}
-                  className="flex items-center gap-1 px-3 py-1.5 mt-4 rounded-lg border border-[#252A35] text-sm text-[#7A8499] hover:bg-[#1A1E27] hover:text-[#E8ECF4] transition-colors duration-200"
+                  className="flex items-center gap-1 px-3 py-1.5 mt-4 rounded-lg border border-[#e8eaed] text-sm text-[#64748b] hover:bg-[#f6f7f8] hover:text-[#0f172a] transition-colors duration-200"
                 >
                   <ArrowUpDown className="w-3.5 h-3.5" />
                   {sortDir === "desc" ? "High \u2192 Low" : "Low \u2192 High"}
@@ -334,18 +329,18 @@ export default function InvestmentsPage() {
         {/* Stats Row */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
           {[
-            { label: "Total Opportunities", value: totalOpps.toString(), sub: `${newThisWeek} new this week`, icon: Building2, color: "text-[#3B7BF5]", border: "border-l-[#3B7BF5]" },
+            { label: "Total Opportunities", value: totalOpps.toString(), sub: `${newThisWeek} new this week`, icon: Building2, color: "text-[#3B82F6]", border: "border-l-[#3B82F6]" },
             { label: "High Score (>80)", value: investmentStats.highScore.toString(), sub: "Priority targets", icon: TrendingUp, color: "text-[#22C55E]", border: "border-l-[#22C55E]" },
-            { label: "Below Market", value: investmentStats.belowMarket.toString(), sub: "Discounted properties", icon: Tag, color: "text-[#60A5FA]", border: "border-l-[#60A5FA]" },
+            { label: "Below Market", value: investmentStats.belowMarket.toString(), sub: "Discounted properties", icon: Tag, color: "text-[#E31E24]", border: "border-l-[#E31E24]" },
             { label: "Sources Active", value: investmentStats.sourcesActive.toString(), sub: "Monitored platforms", icon: Database, color: "text-[#F97316]", border: "border-l-[#F97316]" },
           ].map(s => (
-            <div key={s.label} className={`bg-[#13161C] border border-[#252A35] border-l-2 ${s.border} rounded-xl p-4`}>
+            <div key={s.label} style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }} className={`bg-white border border-[#e8eaed] border-l-2 ${s.border} rounded-xl p-4`}>
               <div className="flex items-center gap-2 mb-2">
                 <s.icon className={`w-4 h-4 ${s.color}`} />
-                <span className="text-[10px] text-[#7A8499] uppercase tracking-wider">{s.label}</span>
+                <span className="text-[10px] text-[#64748b] uppercase tracking-wider">{s.label}</span>
               </div>
-              <p className="text-2xl font-bold text-[#E8ECF4]">{s.value}</p>
-              <p className="text-[10px] text-[#7A8499] mt-0.5">{s.sub}</p>
+              <p className="text-2xl font-bold text-[#0f172a]">{s.value}</p>
+              <p className="text-[10px] text-[#64748b] mt-0.5">{s.sub}</p>
             </div>
           ))}
         </div>
@@ -354,18 +349,18 @@ export default function InvestmentsPage() {
           {/* Main — Investment List */}
           <div className="lg:col-span-3 space-y-3">
             <div className="flex items-center justify-between mb-2">
-              <h2 className="text-sm font-semibold text-[#7A8499] uppercase tracking-wider">
+              <h2 className="text-sm font-semibold text-[#64748b] uppercase tracking-wider">
                 {filteredInvestments.length} {filteredInvestments.length === 1 ? "Opportunity" : "Opportunities"} found
               </h2>
             </div>
 
             {filteredInvestments.length === 0 && (
-              <div className="bg-[#13161C] border border-dashed border-[#252A35] rounded-xl p-12 text-center">
-                <Building2 className="w-10 h-10 text-[#4A5268] mx-auto mb-3" />
-                <h3 className="text-sm font-semibold text-[#7A8499] mb-1">No properties match your filters</h3>
+              <div className="bg-white border border-dashed border-[#e8eaed] rounded-xl p-12 text-center">
+                <Building2 className="w-10 h-10 text-[#94a3b8] mx-auto mb-3" />
+                <h3 className="text-sm font-semibold text-[#64748b] mb-1">No properties match your filters</h3>
                 <button
                   onClick={() => { setTypeFilter("all"); setSourceFilter("all") }}
-                  className="mt-3 text-xs text-[#3B7BF5] font-medium hover:underline"
+                  className="mt-3 text-xs text-[#E31E24] font-medium hover:underline"
                 >
                   Clear filters
                 </button>
@@ -374,7 +369,7 @@ export default function InvestmentsPage() {
 
             {filteredInvestments.map((inv, index) => {
               const isNew = revealedInvestments.includes(inv.id)
-              const srcColor = sourceColors[inv.source] || "text-[#7A8499]"
+              const srcColor = sourceColors[inv.source] || "text-[#64748b]"
               return (
                 <motion.div
                   key={inv.id}
@@ -382,14 +377,15 @@ export default function InvestmentsPage() {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   transition={isNew ? { delay: 0.2 * revealedInvestments.indexOf(inv.id), ease: "easeOut" } : { delay: 0.07 * index, ease: "easeOut" }}
                   onClick={() => setSelectedInvestment(inv)}
-                  className={`group bg-[#13161C] border rounded-xl p-4 cursor-pointer transition-colors duration-200 ${
-                    isNew ? "border-[#22C55E]/40 ring-1 ring-[#22C55E]/10" : "border-[#252A35] hover:border-[#343B4A] hover:bg-[#1A1E27]"
+                  style={{ borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
+                  className={`group bg-white border cursor-pointer transition-all duration-200 p-4 ${
+                    isNew ? "border-[#22C55E]/40 ring-1 ring-[#22C55E]/10" : "border-[#e8eaed] hover:border-[#d0d5dd] hover:-translate-y-0.5 hover:shadow-md"
                   }`}
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        <span className="text-xs font-mono text-[#4A5268]">{inv.id}</span>
+                        <span className="text-xs font-mono text-[#94a3b8]">{inv.id}</span>
                         <StatusBadge status={inv.status} />
                         <ScoreBadge score={inv.investmentScore} />
                         <DiscountBadge percent={inv.discountPercent} />
@@ -401,34 +397,34 @@ export default function InvestmentsPage() {
                       </div>
                       <div className="flex items-center gap-2 mb-1">
                         <TypeIcon type={inv.type} />
-                        <h3 className="text-sm font-bold text-[#E8ECF4] group-hover:text-[#3B7BF5] transition-colors duration-200 leading-tight">{inv.title}</h3>
+                        <h3 className="text-sm font-bold text-[#0f172a] group-hover:text-[#E31E24] transition-colors duration-200 leading-tight">{inv.title}</h3>
                       </div>
-                      <p className="text-xs text-[#7A8499] flex items-center gap-1">
+                      <p className="text-xs text-[#64748b] flex items-center gap-1">
                         <MapPin className="w-3 h-3" /> {inv.city}, {inv.county}
                       </p>
                     </div>
                     <div className="flex-shrink-0 grid grid-cols-2 gap-3 text-right hidden sm:grid">
                       <div>
-                        <p className="text-[10px] text-[#7A8499]">Market</p>
-                        <p className="text-sm font-bold text-[#E8ECF4]">{fmtEUR(inv.marketValueEUR)} EUR</p>
+                        <p className="text-[10px] text-[#64748b]">Market</p>
+                        <p className="text-sm font-bold text-[#0f172a]">{fmtEUR(inv.marketValueEUR)} EUR</p>
                       </div>
                       <div>
-                        <p className="text-[10px] text-[#7A8499]">Price</p>
+                        <p className="text-[10px] text-[#64748b]">Price</p>
                         <p className="text-sm font-bold text-[#22C55E]">{fmtEUR(inv.listedPriceEUR)} EUR</p>
                       </div>
                       <div>
-                        <p className="text-[10px] text-[#7A8499]">Size</p>
-                        <p className="text-xs font-bold text-[#E8ECF4]">{inv.sizeSqm.toLocaleString()} sqm</p>
+                        <p className="text-[10px] text-[#64748b]">Size</p>
+                        <p className="text-xs font-bold text-[#0f172a]">{inv.sizeSqm.toLocaleString()} sqm</p>
                       </div>
                       <div>
-                        <p className="text-[10px] text-[#7A8499]">Source</p>
+                        <p className="text-[10px] text-[#64748b]">Source</p>
                         <p className={`text-xs font-bold ${srcColor}`}>{inv.source}</p>
                       </div>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-[#4A5268] group-hover:text-[#3B7BF5] transition-colors duration-200 mt-2 flex-shrink-0" />
+                    <ChevronRight className="w-5 h-5 text-[#94a3b8] group-hover:text-[#E31E24] transition-colors duration-200 mt-2 flex-shrink-0" />
                   </div>
-                  <div className="flex items-center gap-4 mt-3 pt-3 border-t border-[#252A35] sm:hidden">
-                    <span className="text-[10px] text-[#7A8499]">{fmtEUR(inv.listedPriceEUR)} EUR</span>
+                  <div className="flex items-center gap-4 mt-3 pt-3 border-t border-[#f0f1f3] sm:hidden">
+                    <span className="text-[10px] text-[#64748b]">{fmtEUR(inv.listedPriceEUR)} EUR</span>
                     <span className="text-[10px] text-[#22C55E] font-bold">-{inv.discountPercent}%</span>
                     <span className={`text-[10px] font-medium ${srcColor}`}>{inv.source}</span>
                   </div>
@@ -440,19 +436,19 @@ export default function InvestmentsPage() {
           {/* Sidebar */}
           <div className="space-y-4 lg:sticky lg:top-20 lg:self-start">
             {/* Source Breakdown */}
-            <div className="bg-[#13161C] border border-[#252A35] rounded-xl p-4">
-              <h3 className="text-xs font-bold text-[#7A8499] uppercase tracking-wider mb-3 flex items-center gap-2">
+            <div style={{ borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }} className="bg-white border border-[#e8eaed] p-4">
+              <h3 className="text-xs font-bold text-[#64748b] uppercase tracking-wider mb-3 flex items-center gap-2">
                 <Database className="w-3.5 h-3.5" /> By Source
               </h3>
               <div className="space-y-2.5">
                 {investmentStats.sourceBreakdown.map(s => (
                   <div key={s.source}>
                     <div className="flex items-center justify-between text-sm mb-1">
-                      <span className={`text-xs font-medium ${sourceColors[s.source] || "text-[#7A8499]"}`}>{s.source}</span>
-                      <span className="text-xs text-[#7A8499]">{s.count}</span>
+                      <span className={`text-xs font-medium ${sourceColors[s.source] || "text-[#64748b]"}`}>{s.source}</span>
+                      <span className="text-xs text-[#64748b]">{s.count}</span>
                     </div>
-                    <div className="w-full h-1.5 rounded-full bg-[#1A1E27] overflow-hidden">
-                      <div className={`h-full rounded-full ${sourceBarColors[s.source] || "bg-[#4A5268]/50"}`} style={{ width: `${(s.count / 10) * 100}%` }} />
+                    <div className="w-full h-1.5 rounded-full bg-[#f0f2f5] overflow-hidden">
+                      <div className={`h-full rounded-full ${sourceBarColors[s.source] || "bg-[#94a3b8]/40"}`} style={{ width: `${(s.count / 10) * 100}%` }} />
                     </div>
                   </div>
                 ))}
@@ -460,41 +456,41 @@ export default function InvestmentsPage() {
             </div>
 
             {/* Type Breakdown */}
-            <div className="bg-[#13161C] border border-[#252A35] rounded-xl p-4">
-              <h3 className="text-xs font-bold text-[#7A8499] uppercase tracking-wider mb-3 flex items-center gap-2">
+            <div style={{ borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }} className="bg-white border border-[#e8eaed] p-4">
+              <h3 className="text-xs font-bold text-[#64748b] uppercase tracking-wider mb-3 flex items-center gap-2">
                 <BarChart3 className="w-3.5 h-3.5" /> By Type
               </h3>
               <div className="space-y-2">
                 {investmentStats.typeBreakdown.map(t => (
                   <div key={t.type} className="flex items-center justify-between">
-                    <span className="text-xs text-[#7A8499] flex items-center gap-1.5">
+                    <span className="text-xs text-[#64748b] flex items-center gap-1.5">
                       <TypeIcon type={t.type as Investment["type"]} />
                       {t.type}
                     </span>
-                    <span className="text-xs font-medium text-[#E8ECF4]">{t.count}</span>
+                    <span className="text-xs font-medium text-[#0f172a]">{t.count}</span>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Region Breakdown */}
-            <div className="bg-[#13161C] border border-[#252A35] rounded-xl p-4">
-              <h3 className="text-xs font-bold text-[#7A8499] uppercase tracking-wider mb-3 flex items-center gap-2">
+            <div style={{ borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }} className="bg-white border border-[#e8eaed] p-4">
+              <h3 className="text-xs font-bold text-[#64748b] uppercase tracking-wider mb-3 flex items-center gap-2">
                 <MapPin className="w-3.5 h-3.5" /> By Region
               </h3>
               <div className="space-y-2">
                 {investmentStats.regionBreakdown.map(r => (
                   <div key={r.region} className="flex items-center justify-between">
-                    <span className="text-xs text-[#7A8499]">{r.region}</span>
-                    <span className="text-xs font-medium text-[#E8ECF4]">{r.count}</span>
+                    <span className="text-xs text-[#64748b]">{r.region}</span>
+                    <span className="text-xs font-medium text-[#0f172a]">{r.count}</span>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Activity Feed */}
-            <div className="bg-[#13161C] border border-[#252A35] rounded-xl p-4">
-              <h3 className="text-xs font-bold text-[#7A8499] uppercase tracking-wider mb-3 flex items-center gap-2">
+            <div style={{ borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }} className="bg-white border border-[#e8eaed] p-4">
+              <h3 className="text-xs font-bold text-[#64748b] uppercase tracking-wider mb-3 flex items-center gap-2">
                 <Activity className="w-3.5 h-3.5" /> Source Activity
               </h3>
               <div className="space-y-3">
@@ -507,11 +503,11 @@ export default function InvestmentsPage() {
                     className="flex items-start gap-2"
                   >
                     <div className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${
-                      a.type === "alert" ? "bg-[#EF4444]" : a.type === "new" ? "bg-[#3B7BF5]" : "bg-[#4A5268]"
+                      a.type === "alert" ? "bg-[#EF4444]" : a.type === "new" ? "bg-[#3B82F6]" : "bg-[#94a3b8]"
                     }`} />
                     <div>
-                      <p className="text-xs text-[#E8ECF4]">{a.text}</p>
-                      <p className="text-[10px] text-[#7A8499]">{a.time}</p>
+                      <p className="text-xs text-[#0f172a]">{a.text}</p>
+                      <p className="text-[10px] text-[#64748b]">{a.time}</p>
                     </div>
                   </motion.div>
                 ))}
