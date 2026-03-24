@@ -11,6 +11,9 @@ import {
   CalendarCheck,
   MessageCircle,
   BookOpen,
+  Download,
+  CreditCard,
+  FileText,
 } from "lucide-react"
 
 // ─── Timeline phases ──────────────────────────────────────────────────────────
@@ -848,22 +851,49 @@ export default function CollaborationPage() {
               </div>
             </div>
 
-            {/* Bottom CTA */}
-            <div style={{ marginTop: 32, textAlign: "center" }}>
-              <Link
-                href="/"
+            {/* Divider */}
+            <div
+              style={{
+                height: 1,
+                backgroundColor: "rgba(255,255,255,0.08)",
+                margin: "32px 0 28px",
+              }}
+            />
+
+            {/* Ready to Start */}
+            <p
+              style={{
+                fontSize: 12,
+                color: "#94a3b8",
+                marginBottom: 20,
+                fontWeight: 600,
+                letterSpacing: "0.04em",
+                textTransform: "uppercase" as const,
+              }}
+            >
+              Ready to Start
+            </p>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {/* Pay Deposit Button */}
+              <a
+                href="https://buy.stripe.com/5kQ9ATaMK0LP47a9rVfMA0P"
+                target="_blank"
+                rel="noopener noreferrer"
                 style={{
-                  display: "inline-flex",
+                  display: "flex",
                   alignItems: "center",
-                  gap: 8,
-                  fontSize: 14,
-                  fontWeight: 600,
+                  justifyContent: "center",
+                  gap: 10,
+                  fontSize: 15,
+                  fontWeight: 700,
                   color: "#ffffff",
                   textDecoration: "none",
-                  padding: "12px 24px",
+                  padding: "14px 24px",
                   borderRadius: 10,
                   backgroundColor: "#E31E24",
                   transition: "background-color 0.2s ease",
+                  cursor: "pointer",
                 }}
                 onMouseEnter={e =>
                   ((e.currentTarget as HTMLElement).style.backgroundColor = "#c91a22")
@@ -872,9 +902,49 @@ export default function CollaborationPage() {
                   ((e.currentTarget as HTMLElement).style.backgroundColor = "#E31E24")
                 }
               >
-                Back to Overview <ArrowRight size={14} />
-              </Link>
+                <CreditCard size={16} />
+                Pay Deposit — $5,500
+              </a>
+
+              {/* Download Contract */}
+              <a
+                href="/Synergy-Construct-Service-Agreement.pdf"
+                download
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 10,
+                  fontSize: 14,
+                  fontWeight: 600,
+                  color: "#ffffff",
+                  textDecoration: "none",
+                  padding: "12px 24px",
+                  borderRadius: 10,
+                  border: "1px solid rgba(255,255,255,0.15)",
+                  backgroundColor: "rgba(255,255,255,0.05)",
+                  transition: "all 0.2s ease",
+                  cursor: "pointer",
+                }}
+                onMouseEnter={e => {
+                  const el = e.currentTarget as HTMLElement
+                  el.style.backgroundColor = "rgba(255,255,255,0.1)"
+                  el.style.borderColor = "rgba(255,255,255,0.25)"
+                }}
+                onMouseLeave={e => {
+                  const el = e.currentTarget as HTMLElement
+                  el.style.backgroundColor = "rgba(255,255,255,0.05)"
+                  el.style.borderColor = "rgba(255,255,255,0.15)"
+                }}
+              >
+                <FileText size={15} />
+                Download Service Agreement (PDF)
+              </a>
             </div>
+
+            <p style={{ fontSize: 11, color: "#475569", marginTop: 16, lineHeight: 1.5, textAlign: "center" }}>
+              Secure payment via Stripe. Service agreement is non-binding until signed by both parties.
+            </p>
           </motion.div>
         </div>
       </section>
