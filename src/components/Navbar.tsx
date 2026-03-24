@@ -11,7 +11,6 @@ const navItems = [
   { href: "/tenders", label: "Tender Monitor" },
   { href: "/investments", label: "Investment Finder" },
   { href: "/processing", label: "Processing" },
-  { href: "/roi", label: "ROI" },
   { href: "/collaboration", label: "Collaboration" },
 ]
 

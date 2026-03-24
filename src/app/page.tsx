@@ -80,14 +80,6 @@ const systems = [
       "Proven .p7m, .p7s, ZIP handling with real extraction pipeline and AI analysis. Complete pipeline walkthrough from raw SEAP download to structured brief.",
     links: [{ label: "View Pipeline", href: "/processing" }],
   },
-  {
-    href: "/roi",
-    title: "ROI Calculator",
-    icon: Calculator,
-    description:
-      "Interactive calculator showing time and cost savings from automating tender monitoring and investment search. Built to present to leadership.",
-    links: [{ label: "Open Calculator", href: "/roi" }],
-  },
 ]
 
 const included = [
