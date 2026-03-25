@@ -1,540 +1,327 @@
 "use client"
 
-import { useState, useCallback, useRef, useMemo } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import {
-  FileSearch, AlertTriangle, TrendingUp, MapPin,
-  ChevronRight, Clock, Activity,
-  ArrowUpDown, SlidersHorizontal, Radar, BarChart3, FileText
+  FileSearch, Clock, TrendingUp, Building2,
+  RefreshCw, ChevronDown, ChevronUp, Wifi,
 } from "lucide-react"
-import { mockTenders, tenderStats, type Tender } from "@/data/tenders"
-import { realTenders } from "@/data/seap-real"
 import Navbar from "@/components/Navbar"
-import TenderSlideout from "@/components/TenderSlideout"
 import Footer from "@/components/Footer"
 
-function fmtRON(n: number) {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M RON`
-  if (n >= 1_000) return `${(n / 1_000).toFixed(0)}K RON`
-  return `${n} RON`
+const FEED_URL = "https://nextautomations.us/seap-feed.json"
+
+interface SeapTender {
+  noticeNo: string
+  title: string
+  authority: string
+  valueRon: number | null
+  cpvCode: string
+  cpvName: string
+  type: string
+  procedure: string
+  state: string
+  deadline: string
+  published: string
+  hasLots: boolean
 }
 
-function ScoreBadge({ score }: { score: number }) {
-  const cls = score >= 85
-    ? "bg-[#22C55E]/10 text-[#22C55E] border-[#22C55E]/20"
-    : score >= 70
-    ? "bg-[#F59E0B]/10 text-[#F59E0B] border-[#F59E0B]/20"
-    : "bg-[#94a3b8]/10 text-[#64748b] border-[#94a3b8]/20"
-  return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold border ${cls}`}>
-      {score}%
-    </span>
-  )
+interface FeedData {
+  lastSync: string
+  totalInSystem: number
+  totalFetched: number
+  constructionCount: number
+  construction: SeapTender[]
 }
 
-function StatusBadge({ status }: { status: Tender["status"] }) {
-  const styles: Record<string, string> = {
-    new: "bg-[#3B82F6]/10 text-[#3B82F6] border-[#3B82F6]/20",
-    analyzing: "bg-[#F59E0B]/10 text-[#F59E0B] border-[#F59E0B]/20",
-    briefed: "bg-[#22C55E]/10 text-[#22C55E] border-[#22C55E]/20",
-    passed: "bg-[#94a3b8]/10 text-[#64748b] border-[#94a3b8]/20",
-  }
-  return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider border ${styles[status]}`}>
-      {status}
-    </span>
-  )
+function fmtRON(v: number | null): string {
+  if (!v) return "N/A"
+  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M RON`
+  if (v >= 1_000) return `${(v / 1_000).toFixed(0)}K RON`
+  return `${v.toLocaleString()} RON`
 }
 
-function CategoryBadge({ category }: { category: Tender["category"] }) {
-  const styles: Record<string, string> = {
-    Infrastructure: "bg-[#3B82F6]/10 text-[#3B82F6] border-[#3B82F6]/20",
-    Buildings: "bg-[#A855F7]/10 text-[#A855F7] border-[#A855F7]/20",
-    Energy: "bg-[#F59E0B]/10 text-[#F59E0B] border-[#F59E0B]/20",
-    Industrial: "bg-[#94a3b8]/10 text-[#64748b] border-[#94a3b8]/20",
-  }
-  return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${styles[category]}`}>
-      {category}
-    </span>
-  )
+function timeAgo(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime()
+  const mins = Math.floor(diff / 60000)
+  if (mins < 1) return "just now"
+  if (mins < 60) return `${mins}m ago`
+  const hrs = Math.floor(mins / 60)
+  if (hrs < 24) return `${hrs}h ago`
+  return `${Math.floor(hrs / 24)}d ago`
 }
 
-type SortKey = "matchScore" | "estimatedValueRON" | "submissionDeadline"
-
-const scanSteps = [
-  { label: "Connecting to e-licitatie.ro...", duration: 1000 },
-  { label: "Filtering construction tenders >20M RON...", duration: 1500 },
-  { label: "Downloading tender documents...", duration: 1500 },
-  { label: "OCR processing scanned PDFs & P7S files...", duration: 2000 },
-  { label: "AI generating project briefs...", duration: 1500 },
-]
-
-const initialActivityFeed = [
-  { time: "5 min ago", text: "New construction tender published — Sector 3 Bucuresti", type: "new" as const },
-  { time: "22 min ago", text: "OCR completed for CN1087432 — 4 documents processed", type: "update" as const },
-  { time: "45 min ago", text: "AI scored CN1087601 at 95% match — HIGH PRIORITY", type: "alert" as const },
-  { time: "1 hr ago", text: "P7S signature verified — Certificat urbanism Iasi", type: "update" as const },
-  { time: "2 hr ago", text: "SEAP data refreshed — 4 new tenders today", type: "new" as const },
-  { time: "3 hr ago", text: "Brief generated for CN1087745 — road rehabilitation", type: "update" as const },
-]
-
-// Map realTenders to Tender interface for display
-const seapLiveTenders: Tender[] = realTenders.map(rt => ({
-  id: `seap-${rt.noticeNo}`,
-  seapId: rt.noticeNo,
-  title: rt.title,
-  authority: rt.authority,
-  cpvCode: rt.cpvCode,
-  cpvDescription: rt.cpvDescription,
-  category: "Infrastructure" as const,
-  region: rt.region,
-  city: rt.region,
-  estimatedValueRON: rt.estimatedValueRon,
-  estimatedValueEUR: rt.estimatedValueEur,
-  submissionDeadline: rt.deadline.split('T')[0],
-  publishDate: rt.publishDate.split('T')[0],
-  estimatedDuration: "12 months",
-  guaranteeRON: Math.round(rt.estimatedValueRon * 0.02),
-  status: rt.status,
-  matchScore: rt.matchScore,
-  documents: [],
-  aiBrief: {
-    summary: "Real tender from SEAP e-licitatie.ro — AI brief pending document download.",
-    keyRequirements: ["Document package available on SEAP", "Full analysis after document extraction"],
-    certifications: ["ISO 9001", "ISO 14001"],
-    estimatedTimeline: "12-18 months",
-    riskFlags: ["Verify document package completeness before bidding"],
-  },
-  source: "seap-live" as const,
-}))
+function fmtDate(iso: string): string {
+  if (!iso) return "N/A"
+  return new Date(iso).toLocaleDateString("ro-RO", { day: "numeric", month: "short", year: "numeric" })
+}
 
 export default function TendersPage() {
-  const [selectedTender, setSelectedTender] = useState<Tender | null>(null)
-  const [categoryFilter, setCategoryFilter] = useState("all")
-  const [sortBy, setSortBy] = useState<SortKey>("matchScore")
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc")
-  const [showFilters, setShowFilters] = useState(false)
-  const [scanning, setScanning] = useState(false)
-  const [scanStep, setScanStep] = useState(-1)
-  const [scanProgress, setScanProgress] = useState(0)
-  const [scanComplete, setScanComplete] = useState(false)
-  const [revealedTenders, setRevealedTenders] = useState<string[]>([])
-  const [activityFeed, setActivityFeed] = useState(initialActivityFeed)
-  const scanningRef = useRef(false)
+  const [feed, setFeed] = useState<FeedData | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [sortBy, setSortBy] = useState<"value" | "date">("date")
+  const [refreshing, setRefreshing] = useState(false)
 
-  // Merge: real SEAP tenders first, then mock tenders
-  const allTenders = useMemo(() => [...seapLiveTenders, ...mockTenders], [])
-
-  const hiddenTenders = mockTenders.filter(t => t.hidden)
-  const visibleTenders = allTenders.filter(t => !t.hidden || revealedTenders.includes(t.id))
-
-  const filteredTenders = visibleTenders
-    .filter(t => categoryFilter === "all" || t.category === categoryFilter)
-    .sort((a, b) => {
-      const aNew = revealedTenders.includes(a.id) ? 1 : 0
-      const bNew = revealedTenders.includes(b.id) ? 1 : 0
-      if (aNew !== bNew) return bNew - aNew
-      // Real SEAP tenders sort before mock
-      const aLive = a.source === "seap-live" ? 1 : 0
-      const bLive = b.source === "seap-live" ? 1 : 0
-      if (aLive !== bLive) return bLive - aLive
-      if (sortBy === "submissionDeadline") {
-        const cmp = new Date(a.submissionDeadline).getTime() - new Date(b.submissionDeadline).getTime()
-        return sortDir === "desc" ? -cmp : cmp
-      }
-      return sortDir === "desc" ? b[sortBy] - a[sortBy] : a[sortBy] - b[sortBy]
-    })
-
-  const categories = [...new Set(mockTenders.filter(t => !t.hidden).map(t => t.category))]
-
-  const totalTenders = scanComplete ? tenderStats.totalTenders + hiddenTenders.length : tenderStats.totalTenders + seapLiveTenders.length
-  const newToday = scanComplete ? tenderStats.newToday + hiddenTenders.length : tenderStats.newToday
-
-  const runScan = useCallback(async () => {
-    if (scanningRef.current) return
-    scanningRef.current = true
-    setScanning(true)
-    setScanStep(0)
-    setScanProgress(0)
-    setScanComplete(false)
-
-    const totalDuration = scanSteps.reduce((s, st) => s + st.duration, 0) + 500
-
-    let elapsed = 0
-    for (let i = 0; i < scanSteps.length; i++) {
-      setScanStep(i)
-      const step = scanSteps[i]
-
-      if (i === 1) {
-        setActivityFeed(prev => [{ time: "Just now", text: "Filtering by CPV codes 45* (construction) and value >20M RON...", type: "update" as const }, ...prev.slice(0, 5)])
-      }
-      if (i === 3) {
-        setActivityFeed(prev => [{ time: "Just now", text: "OCR processing 12 scanned PDFs — Tesseract engine active...", type: "update" as const }, ...prev.slice(0, 5)])
-      }
-      if (i === 4) {
-        setActivityFeed(prev => [{ time: "Just now", text: "AI flagged CN1087956 — school campus, 90% match!", type: "alert" as const }, ...prev.slice(0, 5)])
-      }
-
-      const startProgress = elapsed / totalDuration * 100
-      elapsed += step.duration
-      const endProgress = elapsed / totalDuration * 100
-
-      await new Promise<void>(resolve => {
-        const startTime = Date.now()
-        const animate = () => {
-          const fraction = Math.min((Date.now() - startTime) / step.duration, 1)
-          setScanProgress(startProgress + (endProgress - startProgress) * fraction)
-          if (fraction < 1) requestAnimationFrame(animate)
-          else resolve()
-        }
-        requestAnimationFrame(animate)
-      })
+  const fetchFeed = useCallback(async (showRefresh = false) => {
+    if (showRefresh) setRefreshing(true)
+    try {
+      const res = await fetch(FEED_URL, { cache: "no-store" })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const data: FeedData = await res.json()
+      setFeed(data)
+      setError(null)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch")
+    } finally {
+      setLoading(false)
+      setRefreshing(false)
     }
+  }, [])
 
-    setScanStep(scanSteps.length)
-    setScanProgress(100)
+  useEffect(() => { fetchFeed() }, [fetchFeed])
 
-    await new Promise(r => setTimeout(r, 500))
+  const sorted = feed?.construction
+    ? [...feed.construction].sort((a, b) => {
+        if (sortBy === "value") return (b.valueRon ?? 0) - (a.valueRon ?? 0)
+        return new Date(b.published || "").getTime() - new Date(a.published || "").getTime()
+      })
+    : []
 
-    const newIds = hiddenTenders.map(t => t.id)
-    setRevealedTenders(newIds)
-    setScanComplete(true)
-    setScanning(false)
-    scanningRef.current = false
-
-    setActivityFeed(prev => [
-      { time: "Just now", text: `Scan complete — ${hiddenTenders.length} new tenders discovered!`, type: "alert" as const },
-      ...prev.slice(0, 5)
-    ])
-  }, [hiddenTenders])
+  const totalValue = feed?.construction.reduce((s, t) => s + (t.valueRon ?? 0), 0) ?? 0
 
   return (
-    <div className="min-h-screen bg-white">
+    <div style={{ minHeight: "100vh", backgroundColor: "#f6f7f8" }}>
       <Navbar />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        {/* Top Bar */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-2xl font-semibold text-[#0f172a] tracking-tight">SEAP Tender Monitor</h1>
-            <p className="text-sm text-[#64748b] flex items-center gap-2 mt-1">
-              <span className="w-2 h-2 rounded-full bg-[#22C55E] animate-pulse" />
-              {tenderStats.sourcesActive} sources active — Last scan: {new Date(tenderStats.lastScanTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-              <span className="text-[#e8eaed]">|</span>
-              {tenderStats.regionsMonitored} regions
+      <div style={{ maxWidth: 960, margin: "0 auto", padding: "48px 40px 80px" }}>
+
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ ease: "easeOut", duration: 0.5 }}
+          style={{ marginBottom: 32 }}
+        >
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16, marginBottom: 16 }}>
+            <div>
+              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "#E31E24", marginBottom: 8 }}>
+                Live SEAP Monitor
+              </p>
+              <h1 style={{ fontSize: "clamp(24px, 4vw, 36px)", fontWeight: 800, color: "#0f172a", letterSpacing: "-0.03em", margin: 0 }}>
+                Construction Tenders
+              </h1>
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <div style={{ width: 7, height: 7, borderRadius: "50%", backgroundColor: feed ? "#22C55E" : "#94a3b8", boxShadow: feed ? "0 0 6px #22C55E80" : "none" }} />
+                <span style={{ fontSize: 12, color: "#64748b" }}>
+                  {feed ? `Synced ${timeAgo(feed.lastSync)}` : "Connecting..."}
+                </span>
+              </div>
+              <button
+                onClick={() => fetchFeed(true)}
+                disabled={refreshing}
+                style={{
+                  display: "flex", alignItems: "center", gap: 6, padding: "6px 12px",
+                  borderRadius: 8, border: "1px solid #e8eaed", backgroundColor: "#ffffff",
+                  cursor: "pointer", fontSize: 12, fontWeight: 600, color: "#64748b",
+                }}
+              >
+                <RefreshCw size={13} style={{ animation: refreshing ? "spin 1s linear infinite" : "none" }} />
+                Refresh
+              </button>
+            </div>
+          </div>
+
+          <p style={{ fontSize: 15, color: "#64748b", lineHeight: 1.6, maxWidth: 600 }}>
+            Real-time construction tenders from e-licitatie.ro. Data refreshes every hour from the SEAP public API.
+          </p>
+        </motion.div>
+
+        {/* Stats */}
+        {feed && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, ease: "easeOut" }}
+            style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 32 }}
+            className="!grid-cols-2 md:!grid-cols-4"
+          >
+            {[
+              { label: "In SEAP System", value: feed.totalInSystem.toLocaleString(), icon: Wifi, color: "#3B82F6" },
+              { label: "Construction", value: String(feed.constructionCount), icon: Building2, color: "#E31E24" },
+              { label: "Total Value", value: fmtRON(totalValue), icon: TrendingUp, color: "#22C55E" },
+              { label: "Last Sync", value: timeAgo(feed.lastSync), icon: Clock, color: "#F59E0B" },
+            ].map(s => (
+              <div key={s.label} style={{
+                backgroundColor: "#ffffff", border: "1px solid #e8eaed", borderRadius: 12,
+                padding: 16, boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+              }}>
+                <s.icon size={16} style={{ color: s.color, marginBottom: 8 }} />
+                <p style={{ fontSize: 20, fontWeight: 800, color: "#0f172a", letterSpacing: "-0.02em", margin: "0 0 2px" }}>{s.value}</p>
+                <p style={{ fontSize: 11, color: "#94a3b8", margin: 0 }}>{s.label}</p>
+              </div>
+            ))}
+          </motion.div>
+        )}
+
+        {/* Sort bar */}
+        {sorted.length > 0 && (
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+            <p style={{ fontSize: 13, color: "#64748b", margin: 0 }}>
+              {sorted.length} construction tenders (CPV 45*)
             </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={runScan}
-              disabled={scanning || scanComplete}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
-                scanning ? "bg-[#E31E24] text-white animate-pulse cursor-wait"
-                : scanComplete ? "bg-[#22C55E]/10 text-[#22C55E] border border-[#22C55E]/30 cursor-default"
-                : "bg-[#E31E24] text-white hover:bg-[#c91a22] shadow-sm"
-              }`}
-            >
-              <Radar className={`w-4 h-4 ${scanning ? "animate-spin" : ""}`} />
-              {scanning ? "Scanning..." : scanComplete ? `${hiddenTenders.length} New Found` : "Run Scan"}
-            </button>
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
-                showFilters
-                  ? "bg-[#E31E24]/8 text-[#E31E24] border border-[#E31E24]/20"
-                  : "border border-[#e8eaed] text-[#64748b] hover:bg-[#f6f7f8] hover:text-[#0f172a]"
-              }`}
-            >
-              <SlidersHorizontal className="w-4 h-4" /> Filters
-            </button>
-          </div>
-        </div>
-
-        {/* Scan Progress */}
-        <AnimatePresence>
-          {scanning && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ ease: "easeOut" }}
-              className="overflow-hidden mb-6"
-            >
-              <div className="bg-[#E31E24]/5 border border-[#E31E24]/20 rounded-xl p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-[#E31E24]">
-                    {scanStep < scanSteps.length ? scanSteps[scanStep].label : `Scan complete — ${hiddenTenders.length} new tenders found`}
-                  </span>
-                  <span className="text-xs text-[#64748b] font-mono">{Math.round(scanProgress)}%</span>
-                </div>
-                <div className="w-full h-2 bg-[#f6f7f8] rounded-full overflow-hidden">
-                  <motion.div
-                    className="h-full bg-[#E31E24] rounded-full"
-                    style={{ width: `${scanProgress}%` }}
-                    transition={{ duration: 0.1 }}
-                  />
-                </div>
-                <div className="flex items-center gap-4 mt-2">
-                  {scanSteps.map((s, i) => (
-                    <div key={i} className="flex items-center gap-1.5">
-                      <span className={`w-2 h-2 rounded-full ${i < scanStep ? "bg-[#22C55E]" : i === scanStep ? "bg-[#E31E24] animate-pulse" : "bg-[#e8eaed]"}`} />
-                      <span className={`text-[10px] hidden sm:inline ${i <= scanStep ? "text-[#64748b]" : "text-[#94a3b8]"}`}>
-                        {i < 4 ? "Deterministic" : "AI"}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Filters */}
-        <AnimatePresence>
-          {showFilters && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ ease: "easeOut" }}
-              className="overflow-hidden mb-4"
-            >
-              <div className="bg-white border border-[#e8eaed] rounded-xl p-4 flex flex-wrap items-center gap-4">
-                <div>
-                  <label className="text-[10px] text-[#64748b] uppercase tracking-wider block mb-1">Category</label>
-                  <select
-                    value={categoryFilter}
-                    onChange={e => setCategoryFilter(e.target.value)}
-                    className="text-sm border border-[#e8eaed] rounded-lg px-3 py-1.5 bg-white text-[#0f172a] focus:outline-none focus:border-[#E31E24]"
-                  >
-                    <option value="all">All Categories</option>
-                    {categories.map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-[10px] text-[#64748b] uppercase tracking-wider block mb-1">Sort By</label>
-                  <select
-                    value={sortBy}
-                    onChange={e => setSortBy(e.target.value as SortKey)}
-                    className="text-sm border border-[#e8eaed] rounded-lg px-3 py-1.5 bg-white text-[#0f172a] focus:outline-none focus:border-[#E31E24]"
-                  >
-                    <option value="matchScore">Match Score</option>
-                    <option value="estimatedValueRON">Value (RON)</option>
-                    <option value="submissionDeadline">Deadline</option>
-                  </select>
-                </div>
+            <div style={{ display: "flex", gap: 4 }}>
+              {(["date", "value"] as const).map(s => (
                 <button
-                  onClick={() => setSortDir(d => d === "desc" ? "asc" : "desc")}
-                  className="flex items-center gap-1 px-3 py-1.5 mt-4 rounded-lg border border-[#e8eaed] text-sm text-[#64748b] hover:bg-[#f6f7f8] hover:text-[#0f172a] transition-colors duration-200"
+                  key={s}
+                  onClick={() => setSortBy(s)}
+                  style={{
+                    padding: "5px 12px", borderRadius: 6, border: "1px solid #e8eaed",
+                    backgroundColor: sortBy === s ? "#0f172a" : "#ffffff",
+                    color: sortBy === s ? "#ffffff" : "#64748b",
+                    fontSize: 12, fontWeight: 600, cursor: "pointer",
+                  }}
                 >
-                  <ArrowUpDown className="w-3.5 h-3.5" />
-                  {sortDir === "desc" ? "High \u2192 Low" : "Low \u2192 High"}
+                  {s === "date" ? "Latest" : "Highest Value"}
                 </button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Stats Row */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-          {[
-            { label: "Total Tenders", value: totalTenders.toString(), sub: `${newToday} new today`, icon: FileSearch, color: "text-[#3B82F6]", border: "border-l-[#3B82F6]" },
-            { label: "High Value (>50M)", value: tenderStats.highValue.toString(), sub: "Major opportunities", icon: TrendingUp, color: "text-[#22C55E]", border: "border-l-[#22C55E]" },
-            { label: "New Today", value: newToday.toString(), sub: "Published on SEAP", icon: AlertTriangle, color: "text-[#E31E24]", border: "border-l-[#E31E24]" },
-            { label: "Avg. Value", value: fmtRON(tenderStats.avgValueRON), sub: "All monitored tenders", icon: BarChart3, color: "text-[#F97316]", border: "border-l-[#F97316]" },
-          ].map(s => (
-            <div key={s.label} style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }} className={`bg-white border border-[#e8eaed] border-l-2 ${s.border} rounded-xl p-4`}>
-              <div className="flex items-center gap-2 mb-2">
-                <s.icon className={`w-4 h-4 ${s.color}`} />
-                <span className="text-[10px] text-[#64748b] uppercase tracking-wider">{s.label}</span>
-              </div>
-              <p className="text-2xl font-bold text-[#0f172a]">{s.value}</p>
-              <p className="text-[10px] text-[#64748b] mt-0.5">{s.sub}</p>
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
+        )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Main — Tender List */}
-          <div className="lg:col-span-3 space-y-3">
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="text-sm font-semibold text-[#64748b] uppercase tracking-wider">
-                {filteredTenders.length} {filteredTenders.length === 1 ? "Tender" : "Tenders"} found
-                {categoryFilter !== "all" && <span className="text-[#94a3b8] font-normal"> in {categoryFilter}</span>}
-              </h2>
-            </div>
+        {/* Loading */}
+        {loading && (
+          <div style={{ textAlign: "center", padding: 60 }}>
+            <RefreshCw size={24} style={{ color: "#94a3b8", animation: "spin 1s linear infinite", margin: "0 auto 12px", display: "block" }} />
+            <p style={{ fontSize: 14, color: "#94a3b8" }}>Connecting to SEAP...</p>
+          </div>
+        )}
 
-            {filteredTenders.length === 0 && (
-              <div className="bg-white border border-dashed border-[#e8eaed] rounded-xl p-12 text-center">
-                <FileSearch className="w-10 h-10 text-[#94a3b8] mx-auto mb-3" />
-                <h3 className="text-sm font-semibold text-[#64748b] mb-1">No tenders match your filters</h3>
-                <p className="text-xs text-[#94a3b8]">Try adjusting your category filter or sort criteria.</p>
-                <button onClick={() => setCategoryFilter("all")} className="mt-3 text-xs text-[#E31E24] font-medium hover:underline">Clear filters</button>
-              </div>
-            )}
+        {/* Error */}
+        {error && !loading && (
+          <div style={{ textAlign: "center", padding: 40, backgroundColor: "#ffffff", borderRadius: 12, border: "1px solid #e8eaed" }}>
+            <p style={{ fontSize: 14, color: "#EF4444", marginBottom: 8 }}>Could not reach SEAP feed</p>
+            <p style={{ fontSize: 12, color: "#94a3b8" }}>{error}</p>
+          </div>
+        )}
 
-            {filteredTenders.map((tender, index) => {
-              const isNew = revealedTenders.includes(tender.id)
-              const isLive = tender.source === "seap-live"
+        {/* Tender list */}
+        {!loading && sorted.length > 0 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {sorted.map((tender, i) => {
+              const isExpanded = expandedId === tender.noticeNo
               return (
                 <motion.div
-                  key={tender.id}
-                  initial={isNew ? { opacity: 0, y: -20, scale: 0.95 } : { opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={
-                    isNew
-                      ? { delay: 0.2 * revealedTenders.indexOf(tender.id), ease: "easeOut" }
-                      : { delay: 0.07 * index, ease: "easeOut" }
-                  }
-                  onClick={() => setSelectedTender(tender)}
-                  style={{ borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
-                  className={`group bg-white border cursor-pointer transition-all duration-200 p-4 ${
-                    isNew
-                      ? "border-[#22C55E]/40 ring-1 ring-[#22C55E]/10"
-                      : isLive
-                      ? "border-[#E31E24]/20 hover:border-[#E31E24]/40 hover:-translate-y-0.5 hover:shadow-md"
-                      : "border-[#e8eaed] hover:border-[#d0d5dd] hover:-translate-y-0.5 hover:shadow-md"
-                  }`}
+                  key={tender.noticeNo}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.03 * Math.min(i, 15), ease: "easeOut" }}
+                  style={{
+                    backgroundColor: "#ffffff", border: "1px solid #e8eaed", borderRadius: 12,
+                    overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+                    transition: "box-shadow 0.2s ease",
+                  }}
+                  onMouseEnter={e => ((e.currentTarget as HTMLElement).style.boxShadow = "0 4px 16px rgba(0,0,0,0.07)")}
+                  onMouseLeave={e => ((e.currentTarget as HTMLElement).style.boxShadow = "0 1px 3px rgba(0,0,0,0.04)")}
                 >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        <span className="text-xs font-mono text-[#94a3b8]">{tender.seapId}</span>
-                        <StatusBadge status={tender.status} />
-                        <CategoryBadge category={tender.category} />
-                        <ScoreBadge score={tender.matchScore} />
-                        {isLive && (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#E31E24]/8 text-[#E31E24] border border-[#E31E24]/20">
-                            LIVE
-                          </span>
-                        )}
-                        {isNew && (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#22C55E]/10 text-[#22C55E] border border-[#22C55E]/20 animate-pulse">
-                            NEW
-                          </span>
-                        )}
-                      </div>
-                      <h3 className="text-sm font-bold text-[#0f172a] group-hover:text-[#E31E24] transition-colors duration-200 leading-tight">{tender.title}</h3>
-                      <p className="text-xs text-[#64748b] mt-1">{tender.authority}</p>
-                      <p className="text-[10px] text-[#94a3b8] mt-0.5">{tender.cpvCode} — {tender.cpvDescription}</p>
+                  <button
+                    onClick={() => setExpandedId(isExpanded ? null : tender.noticeNo)}
+                    style={{
+                      width: "100%", display: "flex", alignItems: "center", gap: 16,
+                      padding: "16px 20px", background: "none", border: "none",
+                      cursor: "pointer", textAlign: "left",
+                    }}
+                  >
+                    <div style={{ minWidth: 90, textAlign: "right", flexShrink: 0 }}>
+                      <p style={{ fontSize: 15, fontWeight: 800, color: "#0f172a", letterSpacing: "-0.02em", margin: 0 }}>
+                        {fmtRON(tender.valueRon)}
+                      </p>
                     </div>
-                    <div className="flex-shrink-0 grid grid-cols-2 gap-3 text-right hidden sm:grid">
-                      <div>
-                        <p className="text-[10px] text-[#64748b]">Value</p>
-                        <p className="text-sm font-bold text-[#0f172a]">{fmtRON(tender.estimatedValueRON)}</p>
+
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
+                        <span style={{ fontSize: 11, fontFamily: "var(--font-mono)", color: "#94a3b8" }}>{tender.noticeNo}</span>
+                        <span style={{
+                          fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em",
+                          padding: "1px 6px", borderRadius: 4,
+                          backgroundColor: tender.state === "Atribuita" ? "#22C55E08" : tender.state === "Anulata" ? "#EF444408" : "#3B82F608",
+                          color: tender.state === "Atribuita" ? "#22C55E" : tender.state === "Anulata" ? "#EF4444" : "#3B82F6",
+                        }}>
+                          {tender.state || "Active"}
+                        </span>
                       </div>
-                      <div>
-                        <p className="text-[10px] text-[#64748b]">EUR</p>
-                        <p className="text-sm font-bold text-[#64748b]">{(tender.estimatedValueEUR / 1_000_000).toFixed(1)}M</p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] text-[#64748b]">Deadline</p>
-                        <p className="text-xs font-bold text-[#0f172a]">{tender.submissionDeadline}</p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] text-[#64748b]">Duration</p>
-                        <p className="text-xs font-bold text-[#0f172a]">{tender.estimatedDuration}</p>
-                      </div>
+                      <p style={{
+                        fontSize: 14, fontWeight: 600, color: "#0f172a", margin: 0,
+                        overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                      }}>
+                        {tender.title}
+                      </p>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-[#94a3b8] group-hover:text-[#E31E24] transition-colors duration-200 mt-2 flex-shrink-0" />
-                  </div>
-                  <div className="flex items-center gap-4 mt-3 pt-3 border-t border-[#f0f1f3]">
-                    <span className="text-[10px] text-[#64748b] flex items-center gap-1">
-                      <MapPin className="w-3 h-3" /> {tender.city}, {tender.region}
-                    </span>
-                    <span className="text-[10px] text-[#64748b] flex items-center gap-1">
-                      <Clock className="w-3 h-3" /> {Math.max(0, Math.ceil((new Date(tender.submissionDeadline).getTime() - Date.now()) / 86400000))}d left
-                    </span>
-                    {tender.documents.length > 0 && (
-                      <span className="text-[10px] text-[#64748b] flex items-center gap-1">
-                        <FileText className="w-3 h-3" /> {tender.documents.length} docs
-                      </span>
+
+                    {isExpanded
+                      ? <ChevronUp size={16} style={{ color: "#94a3b8", flexShrink: 0 }} />
+                      : <ChevronDown size={16} style={{ color: "#94a3b8", flexShrink: 0 }} />
+                    }
+                  </button>
+
+                  <AnimatePresence>
+                    {isExpanded && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ ease: "easeOut", duration: 0.2 }}
+                        style={{ overflow: "hidden" }}
+                      >
+                        <div style={{ padding: "0 20px 20px", borderTop: "1px solid #e8eaed", paddingTop: 16 }}>
+                          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 12 }} className="!grid-cols-1 md:!grid-cols-2">
+                            <div>
+                              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#94a3b8", marginBottom: 6 }}>Authority</p>
+                              <p style={{ fontSize: 13, color: "#0f172a", margin: 0, lineHeight: 1.5 }}>{tender.authority}</p>
+                            </div>
+                            <div>
+                              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#94a3b8", marginBottom: 6 }}>CPV Code</p>
+                              <p style={{ fontSize: 13, color: "#0f172a", margin: 0, fontFamily: "var(--font-mono)" }}>{tender.cpvCode}</p>
+                              <p style={{ fontSize: 12, color: "#64748b", margin: "2px 0 0" }}>{tender.cpvName}</p>
+                            </div>
+                          </div>
+                          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }} className="!grid-cols-1 md:!grid-cols-3">
+                            <div>
+                              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#94a3b8", marginBottom: 6 }}>Procedure</p>
+                              <p style={{ fontSize: 13, color: "#0f172a", margin: 0 }}>{tender.procedure || "N/A"}</p>
+                            </div>
+                            <div>
+                              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#94a3b8", marginBottom: 6 }}>Published</p>
+                              <p style={{ fontSize: 13, color: "#0f172a", margin: 0 }}>{fmtDate(tender.published)}</p>
+                            </div>
+                            <div>
+                              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#94a3b8", marginBottom: 6 }}>Deadline</p>
+                              <p style={{ fontSize: 13, color: "#0f172a", margin: 0 }}>{fmtDate(tender.deadline)}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
                     )}
-                  </div>
+                  </AnimatePresence>
                 </motion.div>
               )
             })}
           </div>
+        )}
 
-          {/* Sidebar */}
-          <div className="space-y-4 lg:sticky lg:top-20 lg:self-start">
-            {/* Category Breakdown */}
-            <div style={{ borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }} className="bg-white border border-[#e8eaed] p-4">
-              <h3 className="text-xs font-bold text-[#64748b] uppercase tracking-wider mb-3 flex items-center gap-2">
-                <BarChart3 className="w-3.5 h-3.5" /> By Category
-              </h3>
-              <div className="space-y-2.5">
-                {tenderStats.categoryBreakdown.map(c => (
-                  <div key={c.category}>
-                    <div className="flex items-center justify-between text-sm mb-1">
-                      <span className="text-[#0f172a] text-xs">{c.category}</span>
-                      <span className="text-xs text-[#64748b]">{c.count}</span>
-                    </div>
-                    <div className="w-full h-1.5 rounded-full bg-[#f0f2f5] overflow-hidden">
-                      <div className="h-full rounded-full bg-[#E31E24]/40" style={{ width: `${(c.count / 10) * 100}%` }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Region Breakdown */}
-            <div style={{ borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }} className="bg-white border border-[#e8eaed] p-4">
-              <h3 className="text-xs font-bold text-[#64748b] uppercase tracking-wider mb-3 flex items-center gap-2">
-                <MapPin className="w-3.5 h-3.5" /> By Region
-              </h3>
-              <div className="space-y-2">
-                {tenderStats.regionBreakdown.map(r => (
-                  <div key={r.region} className="flex items-center justify-between">
-                    <span className="text-xs text-[#64748b]">{r.region}</span>
-                    <span className="text-xs font-medium text-[#0f172a]">{r.count}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Activity Feed */}
-            <div style={{ borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }} className="bg-white border border-[#e8eaed] p-4">
-              <h3 className="text-xs font-bold text-[#64748b] uppercase tracking-wider mb-3 flex items-center gap-2">
-                <Activity className="w-3.5 h-3.5" /> Source Activity
-              </h3>
-              <div className="space-y-3">
-                {activityFeed.map((a, i) => (
-                  <motion.div
-                    key={`${a.text}-${i}`}
-                    initial={a.time === "Just now" ? { opacity: 0, x: -10 } : false}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ ease: "easeOut" }}
-                    className="flex items-start gap-2"
-                  >
-                    <div className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${
-                      a.type === "alert" ? "bg-[#EF4444]" : a.type === "new" ? "bg-[#3B82F6]" : "bg-[#94a3b8]"
-                    }`} />
-                    <div>
-                      <p className="text-xs text-[#0f172a]">{a.text}</p>
-                      <p className="text-[10px] text-[#64748b]">{a.time}</p>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-          </div>
+        <div style={{ marginTop: 32, textAlign: "center" }}>
+          <p style={{ fontSize: 11, color: "#94a3b8" }}>
+            Data sourced from e-licitatie.ro public API. Refreshed hourly. Construction tenders filtered by CPV code 45*.
+          </p>
         </div>
       </div>
 
       <Footer />
-
-      <AnimatePresence>
-        {selectedTender && (
-          <TenderSlideout
-            tender={selectedTender}
-            onClose={() => setSelectedTender(null)}
-            onPrev={filteredTenders.indexOf(selectedTender) > 0 ? () => setSelectedTender(filteredTenders[filteredTenders.indexOf(selectedTender) - 1]) : undefined}
-            onNext={filteredTenders.indexOf(selectedTender) < filteredTenders.length - 1 ? () => setSelectedTender(filteredTenders[filteredTenders.indexOf(selectedTender) + 1]) : undefined}
-          />
-        )}
-      </AnimatePresence>
+      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
     </div>
   )
 }
